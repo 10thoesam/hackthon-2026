@@ -1,0 +1,141 @@
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
+import { fetchSolicitation, generateMatches } from '../utils/api'
+import MapView from '../components/MapView'
+import MatchCard from '../components/MatchCard'
+
+export default function SolicitationDetail() {
+  const { id } = useParams()
+  const [sol, setSol] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [matching, setMatching] = useState(false)
+  const [error, setError] = useState(null)
+
+  const loadSolicitation = () => {
+    setLoading(true)
+    fetchSolicitation(id)
+      .then(res => setSol(res.data))
+      .catch(() => setError('Failed to load solicitation'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadSolicitation() }, [id])
+
+  const handleGenerateMatches = () => {
+    setMatching(true)
+    generateMatches(id)
+      .then(() => loadSolicitation())
+      .catch(() => setError('Failed to generate matches'))
+      .finally(() => setMatching(false))
+  }
+
+  if (loading) return <div className="text-center py-12 text-slate-500">Loading...</div>
+  if (error) return <div className="text-center py-12 text-red-500">{error}</div>
+  if (!sol) return <div className="text-center py-12 text-slate-500">Not found</div>
+
+  const matchOrgs = (sol.matches || [])
+    .filter(m => m.organization)
+    .map(m => m.organization)
+
+  return (
+    <div className="space-y-6">
+      <Link to="/solicitations" className="text-green-700 hover:text-green-800 text-sm">&larr; Back to Solicitations</Link>
+
+      <div className="bg-white border border-slate-200 rounded-xl p-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">{sol.title}</h1>
+            <p className="text-slate-500 mt-1">{sol.agency}</p>
+          </div>
+          <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+            sol.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+          }`}>
+            {sol.status}
+          </span>
+        </div>
+
+        <p className="text-slate-600 mt-4">{sol.description}</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100">
+          <div>
+            <span className="text-xs text-slate-500">Estimated Value</span>
+            <p className="font-semibold">{sol.estimated_value ? `$${sol.estimated_value.toLocaleString()}` : 'N/A'}</p>
+          </div>
+          <div>
+            <span className="text-xs text-slate-500">ZIP Code</span>
+            <p className="font-semibold">{sol.zip_code}</p>
+          </div>
+          <div>
+            <span className="text-xs text-slate-500">Posted</span>
+            <p className="font-semibold">{sol.posted_date}</p>
+          </div>
+          <div>
+            <span className="text-xs text-slate-500">Deadline</span>
+            <p className="font-semibold">{sol.response_deadline || 'N/A'}</p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <span className="text-xs text-slate-500">Categories</span>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {(sol.categories || []).map(cat => (
+              <span key={cat} className="bg-slate-100 text-slate-600 text-sm px-3 py-1 rounded-full">{cat}</span>
+            ))}
+          </div>
+        </div>
+
+        {sol.set_aside_type && (
+          <div className="mt-3">
+            <span className="text-xs text-slate-500">Set-Aside: </span>
+            <span className="bg-amber-50 text-amber-700 text-sm px-2 py-0.5 rounded-full">{sol.set_aside_type}</span>
+          </div>
+        )}
+
+        {sol.naics_code && (
+          <div className="mt-2">
+            <span className="text-xs text-slate-500">NAICS: </span>
+            <span className="text-sm text-slate-700">{sol.naics_code}</span>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h2 className="text-lg font-semibold text-slate-700 mb-3">Location & Matched Organizations</h2>
+        <MapView
+          solicitations={[sol]}
+          organizations={matchOrgs}
+          center={[sol.lat, sol.lng]}
+          zoom={6}
+          height="350px"
+        />
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-700">
+            Match Results ({(sol.matches || []).length})
+          </h2>
+          <button
+            onClick={handleGenerateMatches}
+            disabled={matching}
+            className="bg-green-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {matching ? 'Generating...' : 'Find Matches'}
+          </button>
+        </div>
+
+        {(sol.matches || []).length > 0 ? (
+          <div className="grid gap-4">
+            {sol.matches.map(match => (
+              <MatchCard key={match.id} match={match} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white border border-slate-200 rounded-xl text-slate-500">
+            No matches yet. Click "Find Matches" to generate AI-scored matches.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
