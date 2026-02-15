@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Dashboard from './pages/Dashboard'
@@ -17,47 +16,12 @@ import SupplierPortal from './pages/SupplierPortal'
 import DistributorPortal from './pages/DistributorPortal'
 import FederalPortal from './pages/FederalPortal'
 
-function Dropdown({ label, items, isActive }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
+function NavTab({ to, path, children }) {
+  const active = to === '/' ? path === '/' : path.startsWith(to)
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-          isActive
-            ? 'bg-amber-500/20 text-amber-300'
-            : 'text-gray-300 hover:text-white hover:bg-white/10'
-        }`}
-      >
-        {label}
-        <svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open && (
-        <div className="absolute top-full left-0 mt-1 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 py-1">
-          {items.map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-amber-500/20 hover:text-amber-300 transition-colors"
-            >
-              <span className="font-medium">{item.label}</span>
-              {item.desc && <span className="block text-xs text-gray-500 mt-0.5">{item.desc}</span>}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+    <Link to={to} className={`px-2.5 py-1.5 rounded text-sm font-medium whitespace-nowrap transition-colors ${
+      active ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
+    }`}>{children}</Link>
   )
 }
 
@@ -65,9 +29,6 @@ export default function App() {
   const location = useLocation()
   const { user, logout } = useAuth()
   const path = location.pathname
-
-  const isPortalActive = path.startsWith('/portal/')
-  const isOpsActive = ['/crisis', '/emergency', '/predictions'].some(p => path.startsWith(p))
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -79,38 +40,24 @@ export default function App() {
       <nav className="bg-gray-900 border-b border-gray-700/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-12">
-            <div className="flex items-center gap-1">
-              <Link to="/" className="text-lg font-bold text-white tracking-tight mr-4 flex items-center gap-2">
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+              <Link to="/" className="text-lg font-bold text-white tracking-tight mr-3 flex items-center gap-2 shrink-0">
                 <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded">FM</span>
                 FoodMatch
               </Link>
 
-              <Link to="/" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                path === '/' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
-              }`}>Command</Link>
-
-              <Link to="/solicitations" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                path.startsWith('/solicitations') ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
-              }`}>Solicitations</Link>
-
-              <Dropdown label="Portals" isActive={isPortalActive} items={[
-                { to: '/portal/suppliers', label: 'Supplier Portal', desc: 'Find matched contracts & distributors' },
-                { to: '/portal/distributors', label: 'Distributor Portal', desc: 'Find solicitations & suppliers' },
-                { to: '/portal/federal', label: 'Federal / Nonprofit', desc: 'Vendor directory & RFQ matching' },
-              ]} />
-
-              <Dropdown label="Operations" isActive={isOpsActive} items={[
-                { to: '/crisis', label: 'Crisis Dashboard', desc: 'Regional capacity & activation' },
-                { to: '/emergency', label: 'Emergency Registry', desc: 'Pre-disaster supply registration' },
-                { to: '/predictions', label: 'AI Predictions', desc: 'Food insecurity forecasting' },
-              ]} />
-
-              <Link to="/rfq" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                path === '/rfq' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
-              }`}>Sample RFQ</Link>
+              <NavTab to="/" path={path}>Command</NavTab>
+              <NavTab to="/solicitations" path={path}>Solicitations</NavTab>
+              <NavTab to="/portal/suppliers" path={path}>Suppliers</NavTab>
+              <NavTab to="/portal/distributors" path={path}>Distributors</NavTab>
+              <NavTab to="/portal/federal" path={path}>Federal/NGO</NavTab>
+              <NavTab to="/emergency" path={path}>Emergency</NavTab>
+              <NavTab to="/crisis" path={path}>Crisis</NavTab>
+              <NavTab to="/predictions" path={path}>Predictions</NavTab>
+              <NavTab to="/rfq" path={path}>Cost Estimator</NavTab>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 ml-2">
               {user ? (
                 <>
                   <Link to="/post-contract"

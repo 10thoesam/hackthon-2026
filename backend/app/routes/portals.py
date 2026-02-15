@@ -41,36 +41,32 @@ def supplier_matches(org_id):
     solicitations = Solicitation.query.filter_by(status="open").all()
     distributors = Organization.query.filter_by(org_type="distributor").all()
 
-    # Match solicitations to this supplier
     sol_matches = []
     for sol in solicitations:
         dist = haversine(supplier.lat, supplier.lng, sol.lat, sol.lng)
-        if dist > supplier.service_radius_miles * 1.5:
-            continue
         cap_score, overlapping = capability_overlap(sol.categories, supplier.capabilities)
-        if cap_score == 0:
-            continue
 
         # Find distributors that can bridge supplier → solicitation
         dist_partners = []
         for d in distributors:
             d_to_sol = haversine(d.lat, d.lng, sol.lat, sol.lng)
             d_to_sup = haversine(d.lat, d.lng, supplier.lat, supplier.lng)
-            if d_to_sol <= d.service_radius_miles and d_to_sup <= d.service_radius_miles:
-                d_cap, d_overlap = capability_overlap(sol.categories, d.capabilities)
-                dist_partners.append({
-                    "distributor": d.to_dict(),
-                    "distance_to_solicitation": round(d_to_sol, 1),
-                    "distance_to_supplier": round(d_to_sup, 1),
-                    "capability_match": d_cap,
-                    "overlapping_capabilities": d_overlap,
-                })
+            d_cap, d_overlap = capability_overlap(sol.categories, d.capabilities)
+            dist_partners.append({
+                "distributor": d.to_dict(),
+                "distance_to_solicitation": round(d_to_sol, 1),
+                "distance_to_supplier": round(d_to_sup, 1),
+                "capability_match": d_cap,
+                "overlapping_capabilities": d_overlap,
+            })
         dist_partners.sort(key=lambda x: x["capability_match"], reverse=True)
 
         need = ZipNeedScore.query.filter_by(zip_code=sol.zip_code).first()
         need_score = need.need_score if need else 50
 
-        composite = cap_score * 0.4 + max(0, (1 - dist / 500)) * 100 * 0.3 + need_score * 0.3
+        # Score: capability, distance, need — no hard cutoffs
+        dist_score = max(0, (1 - dist / 3000)) * 100
+        composite = cap_score * 0.4 + dist_score * 0.3 + need_score * 0.3
         sol_matches.append({
             "solicitation": sol.to_dict(),
             "match_score": round(min(100, composite), 1),
@@ -85,7 +81,7 @@ def supplier_matches(org_id):
 
     return jsonify({
         "supplier": supplier.to_dict(),
-        "matched_solicitations": sol_matches,
+        "matched_solicitations": sol_matches[:25],
         "total_matches": len(sol_matches),
     })
 
@@ -104,36 +100,30 @@ def distributor_matches(org_id):
     sol_matches = []
     for sol in solicitations:
         dist = haversine(distributor.lat, distributor.lng, sol.lat, sol.lng)
-        if dist > distributor.service_radius_miles * 1.5:
-            continue
         cap_score, overlapping = capability_overlap(sol.categories, distributor.capabilities)
-        if cap_score == 0:
-            continue
 
         # Find suppliers that can provide goods for this solicitation
         sup_partners = []
         for s in suppliers:
             s_to_dist = haversine(s.lat, s.lng, distributor.lat, distributor.lng)
-            if s_to_dist <= s.service_radius_miles:
-                s_cap, s_overlap = capability_overlap(sol.categories, s.capabilities)
-                if s_cap > 0:
-                    # Check if supplier has pre-registered capacity
-                    caps = EmergencyCapacity.query.filter_by(
-                        organization_id=s.id, status="available"
-                    ).all()
-                    sup_partners.append({
-                        "supplier": s.to_dict(),
-                        "distance_to_distributor": round(s_to_dist, 1),
-                        "capability_match": s_cap,
-                        "overlapping_capabilities": s_overlap,
-                        "pre_registered_capacity": len(caps),
-                    })
-            sup_partners.sort(key=lambda x: x["capability_match"], reverse=True)
+            s_cap, s_overlap = capability_overlap(sol.categories, s.capabilities)
+            caps = EmergencyCapacity.query.filter_by(
+                organization_id=s.id, status="available"
+            ).all()
+            sup_partners.append({
+                "supplier": s.to_dict(),
+                "distance_to_distributor": round(s_to_dist, 1),
+                "capability_match": s_cap,
+                "overlapping_capabilities": s_overlap,
+                "pre_registered_capacity": len(caps),
+            })
+        sup_partners.sort(key=lambda x: x["capability_match"], reverse=True)
 
         need = ZipNeedScore.query.filter_by(zip_code=sol.zip_code).first()
         need_score = need.need_score if need else 50
 
-        composite = cap_score * 0.4 + max(0, (1 - dist / 500)) * 100 * 0.3 + need_score * 0.3
+        dist_score = max(0, (1 - dist / 3000)) * 100
+        composite = cap_score * 0.4 + dist_score * 0.3 + need_score * 0.3
         sol_matches.append({
             "solicitation": sol.to_dict(),
             "match_score": round(min(100, composite), 1),
@@ -148,7 +138,7 @@ def distributor_matches(org_id):
 
     return jsonify({
         "distributor": distributor.to_dict(),
-        "matched_solicitations": sol_matches,
+        "matched_solicitations": sol_matches[:25],
         "total_matches": len(sol_matches),
     })
 
@@ -157,7 +147,7 @@ def distributor_matches(org_id):
 @portals_bp.route("/portal/federal/vendors", methods=["GET"])
 def federal_vendor_list():
     """Full vendor directory with NAICS, UEI, past performance for federal comparison."""
-    org_type = request.args.get("org_type")  # supplier, distributor, or None for all
+    org_type = request.args.get("org_type")
     naics = request.args.get("naics")
     capability = request.args.get("capability")
     small_business = request.args.get("small_business")
@@ -170,11 +160,9 @@ def federal_vendor_list():
 
     vendors = query.all()
 
-    # Filter by NAICS if provided
     if naics:
         vendors = [v for v in vendors if naics in (v.naics_codes or [])]
 
-    # Filter by capability
     if capability:
         cap_lower = capability.lower()
         vendors = [
@@ -202,8 +190,13 @@ def federal_tri_match():
         return jsonify({"error": "destination_zip required"}), 400
 
     zip_entry = ZipNeedScore.query.filter_by(zip_code=dest_zip).first()
-    dest_lat = zip_entry.lat if zip_entry else 0
-    dest_lng = zip_entry.lng if zip_entry else 0
+    # If ZIP not found, pick the closest one we have
+    if not zip_entry:
+        all_zips = ZipNeedScore.query.all()
+        if all_zips:
+            zip_entry = all_zips[0]  # fallback to first
+    dest_lat = zip_entry.lat if zip_entry else 35.0
+    dest_lng = zip_entry.lng if zip_entry else -90.0
     need_score = zip_entry.need_score if zip_entry else 50
 
     suppliers = Organization.query.filter_by(org_type="supplier").all()
@@ -212,28 +205,21 @@ def federal_tri_match():
     combos = []
     for s in suppliers:
         s_dist = haversine(dest_lat, dest_lng, s.lat, s.lng)
-        if s_dist > s.service_radius_miles * 1.5:
-            continue
         s_cap, s_overlap = capability_overlap(categories, s.capabilities)
-        if s_cap == 0:
-            continue
 
         for d in distributors:
             d_dist = haversine(dest_lat, dest_lng, d.lat, d.lng)
             d_to_s = haversine(d.lat, d.lng, s.lat, s.lng)
-            if d_dist > d.service_radius_miles * 1.5:
-                continue
             d_cap, d_overlap = capability_overlap(categories, d.capabilities)
 
-            # Combo score
+            # Score everything — no hard cutoffs
             combo_score = (
-                s_cap * 0.3 + d_cap * 0.2 +
-                max(0, (1 - s_dist / 500)) * 100 * 0.15 +
-                max(0, (1 - d_dist / 500)) * 100 * 0.15 +
+                s_cap * 0.25 + d_cap * 0.15 +
+                max(0, (1 - s_dist / 3000)) * 100 * 0.2 +
+                max(0, (1 - d_dist / 3000)) * 100 * 0.2 +
                 need_score * 0.2
             )
 
-            # Estimate costs
             transport_cost = d_dist * 2.0 + d_to_s * 1.5
             past_perf_score = min(100, len(s.past_performance or []) * 25 + len(d.past_performance or []) * 25)
 
@@ -263,6 +249,6 @@ def federal_tri_match():
             "need_score": need_score,
         },
         "categories": categories,
-        "matches": combos[:15],
+        "matches": combos[:25],
         "total_combos_evaluated": len(combos),
     })
