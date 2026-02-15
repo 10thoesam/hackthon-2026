@@ -39,4 +39,20 @@ export const loginUser = (data) => api.post('/auth/login', data)
 export const fetchCurrentUser = () => api.get('/auth/me')
 export const runTriage = () => api.post('/matches/triage')
 
+// Emergency capacity
+export const fetchEmergencyCapacity = (params) => api.get('/emergency/capacity', { params })
+export const registerEmergencyCapacity = (data) => api.post('/emergency/capacity', data)
+export const deleteEmergencyCapacity = (id) => api.delete(`/emergency/capacity/${id}`)
+export const fetchCrisisDashboard = () => api.get('/emergency/crisis-dashboard')
+export const fetchSupplyTypes = () => api.get('/emergency/supply-types')
+
+// Predictions
+export const fetchPredictions = (params) => api.get('/predictions/food-insecurity', { params })
+export const fetchSurplusMatching = () => api.get('/predictions/surplus-matching')
+export const fetchWasteReduction = () => api.get('/predictions/waste-reduction')
+
+// RFQ
+export const generateRFQ = (data) => api.post('/rfq/estimate', data)
+export const fetchSupplyCosts = () => api.get('/rfq/supply-costs')
+
 export default api

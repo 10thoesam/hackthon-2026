@@ -8,13 +8,19 @@ import JoinForm from './pages/JoinForm'
 import PostContract from './pages/PostContract'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import EmergencyCapacity from './pages/EmergencyCapacity'
+import CrisisDashboard from './pages/CrisisDashboard'
+import Predictions from './pages/Predictions'
+import CostEstimator from './pages/CostEstimator'
 
 const publicNavLinks = [
   { to: '/', label: 'Dashboard' },
   { to: '/solicitations', label: 'Solicitations' },
+  { to: '/predictions', label: 'Predictions' },
+  { to: '/crisis', label: 'Crisis' },
+  { to: '/emergency', label: 'Emergency' },
+  { to: '/rfq', label: 'Cost Estimator' },
   { to: '/organizations/suppliers', label: 'Suppliers' },
-  { to: '/organizations/distributors', label: 'Distributors' },
-  { to: '/organizations/nonprofits', label: 'Nonprofits' },
 ]
 
 const authNavLinks = [
@@ -88,6 +94,10 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/solicitations" element={<Solicitations />} />
           <Route path="/solicitations/:id" element={<SolicitationDetail />} />
+          <Route path="/predictions" element={<Predictions />} />
+          <Route path="/crisis" element={<CrisisDashboard />} />
+          <Route path="/emergency" element={<EmergencyCapacity />} />
+          <Route path="/rfq" element={<CostEstimator />} />
           <Route path="/organizations/suppliers" element={<Organizations defaultType="supplier" />} />
           <Route path="/organizations/distributors" element={<Organizations defaultType="distributor" />} />
           <Route path="/organizations/nonprofits" element={<Organizations defaultType="nonprofit" />} />

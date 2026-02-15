@@ -22,15 +22,22 @@ def create_app():
     from app.routes.matches import matches_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.auth import auth_bp
+    from app.routes.emergency import emergency_bp
+    from app.routes.predictions import predictions_bp
+    from app.routes.rfq import rfq_bp
 
     app.register_blueprint(solicitations_bp, url_prefix="/api")
     app.register_blueprint(organizations_bp, url_prefix="/api")
     app.register_blueprint(matches_bp, url_prefix="/api")
     app.register_blueprint(dashboard_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(emergency_bp, url_prefix="/api")
+    app.register_blueprint(predictions_bp, url_prefix="/api")
+    app.register_blueprint(rfq_bp, url_prefix="/api")
 
     with app.app_context():
         from app.models import solicitation, organization, zip_need_score, match_result, user
+        from app.models import emergency_capacity, waste_reduction
         db.create_all()
         _run_migrations(app)
 

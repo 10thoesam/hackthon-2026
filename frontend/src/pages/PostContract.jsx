@@ -45,7 +45,7 @@ export default function PostContract() {
         estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
       }
       await createSolicitation(payload)
-      navigate('/solicitations')
+      navigate('/solicitations?type=commercial')
     } catch (err) {
       setError(err.response?.data?.error || 'Something went wrong. Please try again.')
     } finally {

@@ -10,6 +10,8 @@ from app.models.solicitation import Solicitation
 from app.models.organization import Organization
 from app.models.zip_need_score import ZipNeedScore
 from app.models.match_result import MatchResult
+from app.models.emergency_capacity import EmergencyCapacity
+from app.models.waste_reduction import WasteReduction
 
 
 def seed():
@@ -21,6 +23,8 @@ def seed():
             return
 
         print("Clearing existing data...")
+        WasteReduction.query.delete()
+        EmergencyCapacity.query.delete()
         MatchResult.query.delete()
         Solicitation.query.delete()
         Organization.query.delete()
@@ -35,6 +39,12 @@ def seed():
 
         print("Seeding organizations...")
         seed_organizations()
+
+        print("Seeding emergency capacities...")
+        seed_emergency_capacities()
+
+        print("Seeding waste reduction records...")
+        seed_waste_reductions()
 
         db.session.commit()
         print("Done! Seeded successfully.")
@@ -725,6 +735,106 @@ def seed_organizations():
     ]
     for o in orgs:
         db.session.add(Organization(**o))
+
+
+def seed_emergency_capacities():
+    today = date.today()
+    # Get some org IDs (seeded orgs start at id 1)
+    caps = [
+        {"organization_id": 1, "supply_type": "fresh_produce", "item_name": "Fresh Leafy Greens",
+         "quantity": 5000, "unit": "lbs", "unit_cost": 2.50, "zip_code": "38701",
+         "lat": 33.4015, "lng": -91.0618, "service_radius_miles": 200,
+         "available_date": today, "expiry_date": today + timedelta(days=14)},
+        {"organization_id": 1, "supply_type": "fresh_produce", "item_name": "Mixed Fruit Cases",
+         "quantity": 2000, "unit": "cases", "unit_cost": 18.00, "zip_code": "38701",
+         "lat": 33.4015, "lng": -91.0618, "service_radius_miles": 200,
+         "available_date": today, "expiry_date": today + timedelta(days=10)},
+        {"organization_id": 4, "supply_type": "shelf_stable", "item_name": "MRE Ration Packs",
+         "quantity": 15000, "unit": "meals", "unit_cost": 8.50, "zip_code": "70112",
+         "lat": 29.9511, "lng": -90.0715, "service_radius_miles": 350,
+         "available_date": today, "expiry_date": today + timedelta(days=365)},
+        {"organization_id": 4, "supply_type": "water", "item_name": "Bottled Water (16oz)",
+         "quantity": 50000, "unit": "units", "unit_cost": 0.35, "zip_code": "70112",
+         "lat": 29.9511, "lng": -90.0715, "service_radius_miles": 350,
+         "available_date": today, "expiry_date": today + timedelta(days=730)},
+        {"organization_id": 4, "supply_type": "non_perishable", "item_name": "Canned Soup Cases",
+         "quantity": 8000, "unit": "cans", "unit_cost": 1.80, "zip_code": "70112",
+         "lat": 29.9511, "lng": -90.0715, "service_radius_miles": 350,
+         "available_date": today, "expiry_date": today + timedelta(days=540)},
+        {"organization_id": 5, "supply_type": "non_perishable", "item_name": "Shelf-Stable Meal Kits",
+         "quantity": 10000, "unit": "meals", "unit_cost": 4.50, "zip_code": "46201",
+         "lat": 39.7684, "lng": -86.1581, "service_radius_miles": 400,
+         "available_date": today, "expiry_date": today + timedelta(days=180)},
+        {"organization_id": 12, "supply_type": "shelf_stable", "item_name": "Emergency Food Pallets",
+         "quantity": 200, "unit": "pallets", "unit_cost": 450.00, "zip_code": "77001",
+         "lat": 29.7604, "lng": -95.3698, "service_radius_miles": 500,
+         "available_date": today, "expiry_date": today + timedelta(days=365)},
+        {"organization_id": 12, "supply_type": "water", "item_name": "Water Pallets (1 Gallon)",
+         "quantity": 25000, "unit": "gallons", "unit_cost": 1.20, "zip_code": "77001",
+         "lat": 29.7604, "lng": -95.3698, "service_radius_miles": 500,
+         "available_date": today, "expiry_date": today + timedelta(days=730)},
+        {"organization_id": 15, "supply_type": "non_perishable", "item_name": "Freeze-Dried Ration Packs",
+         "quantity": 20000, "unit": "meals", "unit_cost": 6.00, "zip_code": "75201",
+         "lat": 32.7872, "lng": -96.7985, "service_radius_miles": 500,
+         "available_date": today, "expiry_date": today + timedelta(days=730)},
+        {"organization_id": 15, "supply_type": "canned_goods", "item_name": "USDA Commodity Canned Meat",
+         "quantity": 12000, "unit": "cans", "unit_cost": 2.50, "zip_code": "75201",
+         "lat": 32.7872, "lng": -96.7985, "service_radius_miles": 500,
+         "available_date": today, "expiry_date": today + timedelta(days=365)},
+        {"organization_id": 7, "supply_type": "dairy", "item_name": "UHT Milk Cases",
+         "quantity": 3000, "unit": "cases", "unit_cost": 24.00, "zip_code": "48201",
+         "lat": 42.3486, "lng": -83.0567, "service_radius_miles": 300,
+         "available_date": today, "expiry_date": today + timedelta(days=90)},
+        {"organization_id": 11, "supply_type": "fresh_produce", "item_name": "Seasonal Produce Mix",
+         "quantity": 8000, "unit": "lbs", "unit_cost": 2.00, "zip_code": "19101",
+         "lat": 39.9526, "lng": -75.1652, "service_radius_miles": 600,
+         "available_date": today, "expiry_date": today + timedelta(days=7)},
+        {"organization_id": 17, "supply_type": "medical_nutrition", "item_name": "Ensure/Boost Nutrition Shakes",
+         "quantity": 5000, "unit": "units", "unit_cost": 8.00, "zip_code": "53201",
+         "lat": 43.0389, "lng": -87.9065, "service_radius_miles": 300,
+         "available_date": today, "expiry_date": today + timedelta(days=120)},
+        {"organization_id": 17, "supply_type": "baby_formula", "item_name": "Infant Formula (12oz cans)",
+         "quantity": 2000, "unit": "cans", "unit_cost": 18.00, "zip_code": "53201",
+         "lat": 43.0389, "lng": -87.9065, "service_radius_miles": 300,
+         "available_date": today, "expiry_date": today + timedelta(days=180)},
+        {"organization_id": 19, "supply_type": "hygiene_supplies", "item_name": "Emergency Hygiene Kits",
+         "quantity": 3000, "unit": "kits", "unit_cost": 8.50, "zip_code": "32099",
+         "lat": 30.3322, "lng": -81.6557, "service_radius_miles": 400,
+         "available_date": today, "expiry_date": today + timedelta(days=365)},
+    ]
+    for c in caps:
+        db.session.add(EmergencyCapacity(**c))
+
+
+def seed_waste_reductions():
+    records = [
+        {"source_org_id": 6, "dest_org_id": 3, "supply_type": "fresh_produce",
+         "item_name": "Rescued Farm Produce", "quantity_rescued": 45000, "unit": "lbs",
+         "estimated_value": 67500, "source_zip": "37203", "dest_zip": "38103"},
+        {"source_org_id": 11, "dest_org_id": 8, "supply_type": "fresh_produce",
+         "item_name": "Surplus Grocery Produce", "quantity_rescued": 28000, "unit": "lbs",
+         "estimated_value": 42000, "source_zip": "19101", "dest_zip": "60621"},
+        {"source_org_id": 1, "dest_org_id": 3, "supply_type": "fresh_produce",
+         "item_name": "Delta Region Surplus Harvest", "quantity_rescued": 35000, "unit": "lbs",
+         "estimated_value": 52500, "source_zip": "38701", "dest_zip": "38614"},
+        {"source_org_id": 15, "dest_org_id": 18, "supply_type": "canned_goods",
+         "item_name": "Near-Expiry Canned Goods", "quantity_rescued": 20000, "unit": "cans",
+         "estimated_value": 30000, "source_zip": "75201", "dest_zip": "73101"},
+        {"source_org_id": 12, "dest_org_id": 19, "supply_type": "shelf_stable",
+         "item_name": "Hurricane Season Surplus MREs", "quantity_rescued": 15000, "unit": "meals",
+         "estimated_value": 75000, "source_zip": "77001", "dest_zip": "32099"},
+        {"source_org_id": 7, "dest_org_id": 14, "supply_type": "dairy",
+         "item_name": "Surplus Dairy Products", "quantity_rescued": 8000, "unit": "units",
+         "estimated_value": 24000, "source_zip": "48201", "dest_zip": "44101"},
+        {"source_org_id": 5, "dest_org_id": 20, "supply_type": "non_perishable",
+         "item_name": "Institutional Meal Surplus", "quantity_rescued": 12000, "unit": "meals",
+         "estimated_value": 36000, "source_zip": "46201", "dest_zip": "42101"},
+        {"source_org_id": 4, "dest_org_id": 3, "supply_type": "water",
+         "item_name": "Expiring Water Stock Rotation", "quantity_rescued": 10000, "unit": "gallons",
+         "estimated_value": 12000, "source_zip": "70112", "dest_zip": "39201"},
+    ]
+    for r in records:
+        db.session.add(WasteReduction(**r))
 
 
 if __name__ == "__main__":
