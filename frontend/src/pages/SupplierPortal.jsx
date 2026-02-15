@@ -158,7 +158,7 @@ export default function SupplierPortal() {
 
                   {m.distributor_partners.length > 0 && (
                     <div className="border-t border-gray-800 pt-3">
-                      <p className="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wider">Available Distributor Partners:</p>
+                      <p className="text-xs text-gray-500 font-bold mb-2 uppercase tracking-wider">Available Vendor Partners:</p>
                       <div className="grid gap-2">
                         {m.distributor_partners.slice(0, 3).map((dp, j) => (
                           <div key={j} className="bg-gray-800 rounded-lg p-3 flex items-center justify-between">
@@ -237,7 +237,7 @@ export default function SupplierPortal() {
                         <p className="text-xs text-gray-400">{combo.supplier_distance} mi — {combo.supplier_capability_match}% cap</p>
                       </div>
                       <div className="bg-purple-600/10 rounded-lg p-3 border border-purple-600/30">
-                        <p className="text-xs text-purple-400 font-bold">DISTRIBUTOR</p>
+                        <p className="text-xs text-purple-400 font-bold">VENDOR</p>
                         <p className="font-bold text-white">{combo.distributor.name}</p>
                         <p className="text-xs text-gray-400">{combo.distributor_distance} mi — {combo.distributor_capability_match}% cap</p>
                       </div>

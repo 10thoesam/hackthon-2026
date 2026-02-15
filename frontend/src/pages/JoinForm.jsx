@@ -21,7 +21,7 @@ const CERTIFICATIONS = [
 
 const ORG_TYPES = [
   { value: 'supplier', label: 'Supplier', desc: 'You supply food products or services' },
-  { value: 'distributor', label: 'Distributor', desc: 'You handle logistics and distribution' },
+  { value: 'distributor', label: 'Vendor', desc: 'You handle logistics and distribution' },
   { value: 'nonprofit', label: 'Nonprofit', desc: 'You run food assistance programs' },
 ]
 

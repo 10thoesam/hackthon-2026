@@ -49,7 +49,7 @@ export default function App() {
               <NavTab to="/" path={path}>Command</NavTab>
               <NavTab to="/solicitations" path={path}>Solicitations</NavTab>
               <NavTab to="/portal/suppliers" path={path}>Suppliers</NavTab>
-              <NavTab to="/portal/distributors" path={path}>Distributors</NavTab>
+              <NavTab to="/portal/distributors" path={path}>Vendors</NavTab>
               <NavTab to="/portal/federal" path={path}>Federal/NGO</NavTab>
               <NavTab to="/emergency" path={path}>Emergency</NavTab>
               <NavTab to="/crisis" path={path}>Crisis</NavTab>

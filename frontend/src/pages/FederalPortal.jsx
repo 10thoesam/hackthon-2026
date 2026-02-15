@@ -114,7 +114,7 @@ export default function FederalPortal() {
               className="px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
               <option value="">All Types</option>
               <option value="supplier">Suppliers</option>
-              <option value="distributor">Distributors</option>
+              <option value="distributor">Vendors</option>
               <option value="nonprofit">Nonprofits</option>
             </select>
             <input type="text" placeholder="Search capability..."
@@ -144,7 +144,7 @@ export default function FederalPortal() {
                           v.org_type === 'supplier' ? 'bg-blue-600/30 text-blue-300' :
                           v.org_type === 'distributor' ? 'bg-purple-600/30 text-purple-300' :
                           'bg-green-600/30 text-green-300'
-                        }`}>{v.org_type}</span>
+                        }`}>{v.org_type === 'distributor' ? 'vendor' : v.org_type === 'nonprofit' ? 'government/ngo' : v.org_type}</span>
                         {v.small_business && (
                           <span className="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded font-medium">Small Business</span>
                         )}
@@ -262,7 +262,7 @@ export default function FederalPortal() {
                         <p className="text-xs text-gray-500 mt-2">{combo.supplier_distance} mi — {combo.supplier_capability_match}% cap</p>
                       </div>
                       <div className="bg-purple-600/10 rounded-lg p-3 border border-purple-600/30">
-                        <p className="text-xs text-purple-400 font-bold">DISTRIBUTOR</p>
+                        <p className="text-xs text-purple-400 font-bold">VENDOR</p>
                         <p className="font-bold text-white">{combo.distributor.name}</p>
                         <p className="text-xs text-gray-400 mt-1">{combo.distributor.services_description || combo.distributor.description}</p>
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -398,7 +398,7 @@ export default function FederalPortal() {
               <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-xl p-1">
                 {[
                   { key: 'suppliers', label: `Suppliers (${rfq.supplier_quotes?.length || 0})` },
-                  { key: 'distributors', label: `Distributors (${rfq.distributor_quotes?.length || 0})` },
+                  { key: 'distributors', label: `Vendors (${rfq.distributor_quotes?.length || 0})` },
                   { key: 'combos', label: `Combos (${rfq.combo_rankings?.length || 0})` },
                 ].map(t => (
                   <button key={t.key} onClick={() => setRfqTab(t.key)}

@@ -54,8 +54,8 @@ export default function DistributorPortal() {
     <div className="space-y-6">
       <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
         <div className="flex items-center gap-3 mb-1">
-          <span className="bg-purple-600 text-white text-xs font-black px-2 py-0.5 rounded">DIST</span>
-          <h1 className="text-xl font-bold text-white">Distributor Portal</h1>
+          <span className="bg-purple-600 text-white text-xs font-black px-2 py-0.5 rounded">VENDOR</span>
+          <h1 className="text-xl font-bold text-white">Vendor Portal</h1>
         </div>
         <p className="text-gray-400 text-sm">Find solicitations and suppliers to partner with for distribution contracts</p>
       </div>
@@ -64,7 +64,7 @@ export default function DistributorPortal() {
         <label className="block text-sm font-medium text-gray-300 mb-2">Select your organization</label>
         <select value={selectedId} onChange={e => handleSelect(e.target.value)}
           className="w-full max-w-md px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
-          <option value="">Choose a distributor...</option>
+          <option value="">Choose a vendor...</option>
           {distributors.map(d => (
             <option key={d.id} value={d.id}>{d.name} — {d.zip_code}</option>
           ))}
@@ -230,7 +230,7 @@ export default function DistributorPortal() {
                         <p className="text-xs text-gray-400">{combo.supplier_distance} mi — {combo.supplier_capability_match}% cap</p>
                       </div>
                       <div className="bg-purple-600/10 rounded-lg p-3 border border-purple-600/30">
-                        <p className="text-xs text-purple-400 font-bold">DISTRIBUTOR</p>
+                        <p className="text-xs text-purple-400 font-bold">VENDOR</p>
                         <p className="font-bold text-white">{combo.distributor.name}</p>
                         <p className="text-xs text-gray-400">{combo.distributor_distance} mi — {combo.distributor_capability_match}% cap</p>
                       </div>

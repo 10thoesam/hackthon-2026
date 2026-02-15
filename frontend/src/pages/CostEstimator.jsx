@@ -171,7 +171,7 @@ export default function CostEstimator() {
           <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-xl p-1">
             {[
               { key: 'suppliers', label: `Supplier Quotes (${rfq.supplier_quotes?.length || 0})` },
-              { key: 'distributors', label: `Distributor Quotes (${rfq.distributor_quotes?.length || 0})` },
+              { key: 'distributors', label: `Vendor Quotes (${rfq.distributor_quotes?.length || 0})` },
               { key: 'combos', label: `Best Combos (${rfq.combo_rankings?.length || 0})` },
             ].map(t => (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
@@ -267,7 +267,7 @@ export default function CostEstimator() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-bold text-white text-lg">{dq.organization.name}</h3>
-                          <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded font-medium">DISTRIBUTOR</span>
+                          <span className="text-xs px-2 py-0.5 bg-purple-600/30 text-purple-300 rounded font-medium">VENDOR</span>
                         </div>
                         <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
                           {dq.organization.uei && <span className="font-mono bg-gray-800 px-2 py-0.5 rounded">UEI: {dq.organization.uei}</span>}

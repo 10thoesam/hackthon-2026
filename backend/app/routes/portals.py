@@ -1,4 +1,4 @@
-"""Portal APIs — tailored views for suppliers, distributors, and federal/nonprofit clients."""
+"""Portal APIs — tailored views for suppliers, vendors, and federal/nonprofit clients."""
 import math
 from flask import Blueprint, request, jsonify
 from app import db
@@ -8,6 +8,13 @@ from app.models.zip_need_score import ZipNeedScore
 from app.models.emergency_capacity import EmergencyCapacity
 
 portals_bp = Blueprint("portals", __name__)
+
+ESSENTIAL_CATEGORIES = {
+    "water": ["water"],
+    "food": ["fresh_produce", "protein", "dairy", "grains_cereals", "baby_formula", "medical_nutrition"],
+    "non_perishable": ["non_perishable", "canned_goods", "shelf_stable"],
+    "hygiene": ["hygiene_supplies", "medical_nutrition"],
+}
 
 
 def haversine(lat1, lng1, lat2, lng2):
@@ -186,8 +193,15 @@ def federal_tri_match():
 
     dest_zip = data.get("destination_zip")
     categories = data.get("categories", [])
+    supply_types = data.get("supply_types", [])
+    essential_category = data.get("essential_category", "")
     if not dest_zip:
         return jsonify({"error": "destination_zip required"}), 400
+
+    # Resolve essential category to supply types for capacity filtering
+    cap_supply_filter = supply_types
+    if essential_category and essential_category in ESSENTIAL_CATEGORIES:
+        cap_supply_filter = ESSENTIAL_CATEGORIES[essential_category]
 
     zip_entry = ZipNeedScore.query.filter_by(zip_code=dest_zip).first()
     # If ZIP not found, pick the closest one we have
@@ -201,6 +215,22 @@ def federal_tri_match():
 
     suppliers = Organization.query.filter_by(org_type="supplier").all()
     distributors = Organization.query.filter_by(org_type="distributor").all()
+
+    # Get regional capacity for this destination
+    cap_query = EmergencyCapacity.query.filter_by(status="available")
+    if cap_supply_filter:
+        cap_query = cap_query.filter(EmergencyCapacity.supply_type.in_(cap_supply_filter))
+    regional_capacity = cap_query.all()
+    capacity_by_org = {}
+    for cap in regional_capacity:
+        if cap.organization_id not in capacity_by_org:
+            capacity_by_org[cap.organization_id] = []
+        capacity_by_org[cap.organization_id].append({
+            "supply_type": cap.supply_type,
+            "item_name": cap.item_name,
+            "quantity": cap.quantity,
+            "unit": cap.unit,
+        })
 
     combos = []
     for s in suppliers:
@@ -223,6 +253,11 @@ def federal_tri_match():
             transport_cost = d_dist * 2.0 + d_to_s * 1.5
             past_perf_score = min(100, len(s.past_performance or []) * 25 + len(d.past_performance or []) * 25)
 
+            # Boost score if supplier has pre-registered emergency capacity
+            s_capacity = capacity_by_org.get(s.id, [])
+            capacity_bonus = min(10, len(s_capacity) * 2) if s_capacity else 0
+            combo_score += capacity_bonus
+
             combos.append({
                 "supplier": s.to_dict(),
                 "distributor": d.to_dict(),
@@ -237,6 +272,7 @@ def federal_tri_match():
                 "combined_certifications": list(set(
                     (s.certifications or []) + (d.certifications or [])
                 )),
+                "supplier_capacity": s_capacity,
             })
 
     combos.sort(key=lambda x: x["combo_score"], reverse=True)

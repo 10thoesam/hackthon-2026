@@ -16,6 +16,13 @@ SUPPLY_TYPES = [
     "protein", "dairy", "hygiene_supplies",
 ]
 
+ESSENTIAL_CATEGORIES = {
+    "water": ["water"],
+    "food": ["fresh_produce", "protein", "dairy", "grains_cereals", "baby_formula", "medical_nutrition"],
+    "non_perishable": ["non_perishable", "canned_goods", "shelf_stable"],
+    "hygiene": ["hygiene_supplies", "medical_nutrition"],
+}
+
 
 @emergency_bp.route("/emergency/capacity", methods=["GET"])
 def list_capacity():
@@ -25,6 +32,14 @@ def list_capacity():
     supply_type = request.args.get("supply_type")
     if supply_type:
         query = query.filter_by(supply_type=supply_type)
+
+    category = request.args.get("category")
+    if category and category in ESSENTIAL_CATEGORIES:
+        query = query.filter(EmergencyCapacity.supply_type.in_(ESSENTIAL_CATEGORIES[category]))
+
+    search = request.args.get("search")
+    if search:
+        query = query.filter(EmergencyCapacity.item_name.ilike(f"%{search}%"))
 
     zip_code = request.args.get("zip_code")
     if zip_code:

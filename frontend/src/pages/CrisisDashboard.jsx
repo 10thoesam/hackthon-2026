@@ -2,10 +2,27 @@ import { useState, useEffect } from 'react'
 import { fetchCrisisDashboard, fetchEmergencyCapacity } from '../utils/api'
 import MapView from '../components/MapView'
 
+const ESSENTIAL_CATEGORIES = [
+  { key: '', label: 'All' },
+  { key: 'water', label: 'Water' },
+  { key: 'food', label: 'Food' },
+  { key: 'non_perishable', label: 'Non-Perishable' },
+  { key: 'hygiene', label: 'Hygiene & Medical' },
+]
+
+const CATEGORY_TYPES = {
+  water: ['water'],
+  food: ['fresh_produce', 'protein', 'dairy', 'grains_cereals', 'baby_formula', 'medical_nutrition'],
+  non_perishable: ['non_perishable', 'canned_goods', 'shelf_stable'],
+  hygiene: ['hygiene_supplies', 'medical_nutrition'],
+}
+
 export default function CrisisDashboard() {
   const [data, setData] = useState(null)
   const [capacities, setCapacities] = useState([])
   const [loading, setLoading] = useState(true)
+  const [itemSearch, setItemSearch] = useState('')
+  const [essentialCat, setEssentialCat] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -26,8 +43,15 @@ export default function CrisisDashboard() {
   const { regions, summary } = data
   const criticalRegions = regions.filter(r => r.avg_need_score >= 70)
 
-  // Build map markers from capacities
-  const capMarkers = capacities.filter(c => c.lat && c.lng).map(c => ({
+  // Filter capacities by search and essential category
+  const filteredCapacities = capacities.filter(c => {
+    if (itemSearch && !c.item_name?.toLowerCase().includes(itemSearch.toLowerCase())) return false
+    if (essentialCat && CATEGORY_TYPES[essentialCat] && !CATEGORY_TYPES[essentialCat].includes(c.supply_type)) return false
+    return true
+  })
+
+  // Build map markers from filtered capacities
+  const capMarkers = filteredCapacities.filter(c => c.lat && c.lng).map(c => ({
     lat: c.lat, lng: c.lng, name: c.item_name,
     zip_code: c.zip_code, org_type: 'supplier',
   }))
@@ -64,6 +88,33 @@ export default function CrisisDashboard() {
           <p className="text-xs text-gray-400">Supply Types Available</p>
           <p className="text-2xl font-bold text-white">{Object.keys(summary.by_supply_type).length}</p>
         </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 space-y-3">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Essential:</span>
+          {ESSENTIAL_CATEGORIES.map(cat => (
+            <button key={cat.key} onClick={() => setEssentialCat(cat.key)}
+              className={`px-3 py-1 rounded-lg text-sm font-bold transition-colors ${
+                essentialCat === cat.key ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'
+              }`}>
+              {cat.label}
+            </button>
+          ))}
+          <div className="ml-auto">
+            <input type="text" value={itemSearch} onChange={e => setItemSearch(e.target.value)}
+              placeholder="Search items..."
+              className="px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 w-48" />
+          </div>
+        </div>
+        {(itemSearch || essentialCat) && (
+          <p className="text-xs text-amber-400">
+            Showing {filteredCapacities.length} of {capacities.length} capacity items
+            {essentialCat && ` in ${ESSENTIAL_CATEGORIES.find(c => c.key === essentialCat)?.label}`}
+            {itemSearch && ` matching "${itemSearch}"`}
+          </p>
+        )}
       </div>
 
       {/* Supply type breakdown */}
@@ -145,9 +196,17 @@ export default function CrisisDashboard() {
                   <h3 className="font-bold text-white">{r.state} — {r.cities.join(', ')}</h3>
                   <span className="text-xs px-2 py-0.5 rounded bg-red-600/20 text-red-400 font-bold">Need: {r.avg_need_score}</span>
                 </div>
-                {r.capacity_items.length > 0 ? (
+                {r.capacity_items.filter(item => {
+                  if (essentialCat && CATEGORY_TYPES[essentialCat] && !CATEGORY_TYPES[essentialCat].includes(item.supply_type)) return false
+                  if (itemSearch && !item.item_name?.toLowerCase().includes(itemSearch.toLowerCase())) return false
+                  return true
+                }).length > 0 ? (
                   <div className="space-y-1">
-                    {r.capacity_items.map((item, i) => (
+                    {r.capacity_items.filter(item => {
+                      if (essentialCat && CATEGORY_TYPES[essentialCat] && !CATEGORY_TYPES[essentialCat].includes(item.supply_type)) return false
+                      if (itemSearch && !item.item_name?.toLowerCase().includes(itemSearch.toLowerCase())) return false
+                      return true
+                    }).map((item, i) => (
                       <div key={i} className="text-sm text-gray-400 flex items-center gap-2">
                         <span className="text-xs px-1.5 py-0.5 bg-gray-800 rounded text-gray-300">{item.supply_type.replace(/_/g, ' ')}</span>
                         <span className="text-white">{item.item_name} — {item.quantity} {item.unit}</span>

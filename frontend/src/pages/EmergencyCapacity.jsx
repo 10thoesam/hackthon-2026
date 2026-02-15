@@ -22,6 +22,14 @@ const SUPPLY_TYPES = [
   { value: 'hygiene_supplies', label: 'Hygiene Supplies' },
 ]
 
+const ESSENTIAL_CATEGORIES = [
+  { key: '', label: 'All Supplies', types: [] },
+  { key: 'water', label: 'Water', types: ['water'] },
+  { key: 'food', label: 'Food', types: ['fresh_produce', 'protein', 'dairy', 'grains_cereals', 'baby_formula', 'medical_nutrition'] },
+  { key: 'non_perishable', label: 'Non-Perishable', types: ['non_perishable', 'canned_goods', 'shelf_stable'] },
+  { key: 'hygiene', label: 'Hygiene & Medical', types: ['hygiene_supplies', 'medical_nutrition'] },
+]
+
 const UNITS = ['units', 'lbs', 'pallets', 'cases', 'gallons', 'cans', 'kits', 'meals']
 
 export default function EmergencyCapacity() {
@@ -30,6 +38,7 @@ export default function EmergencyCapacity() {
   const [orgs, setOrgs] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [essentialCat, setEssentialCat] = useState('')
   const [filter, setFilter] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -41,14 +50,16 @@ export default function EmergencyCapacity() {
 
   const load = () => {
     setLoading(true)
-    const params = filter ? { supply_type: filter } : {}
+    const params = {}
+    if (filter) params.supply_type = filter
+    else if (essentialCat) params.category = essentialCat
     fetchEmergencyCapacity(params)
       .then(res => setCapacities(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { load() }, [filter])
+  useEffect(() => { load() }, [filter, essentialCat])
   useEffect(() => {
     fetchOrganizations({ org_type: 'supplier' })
       .then(res => setOrgs(res.data))
@@ -239,18 +250,39 @@ export default function EmergencyCapacity() {
         </div>
       )}
 
-      {/* Filter pills */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <button onClick={() => setFilter('')}
-          className={`px-3 py-1 rounded-full text-sm font-medium ${!filter ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
-          All
-        </button>
-        {SUPPLY_TYPES.map(t => (
-          <button key={t.value} onClick={() => setFilter(t.value)}
-            className={`px-3 py-1 rounded-full text-sm font-medium ${filter === t.value ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
-            {t.label}
-          </button>
-        ))}
+      {/* Essential category filter */}
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 space-y-3">
+        <div>
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Essential Categories</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {ESSENTIAL_CATEGORIES.map(cat => (
+              <button key={cat.key} onClick={() => { setEssentialCat(cat.key); setFilter('') }}
+                className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                  essentialCat === cat.key ? 'bg-red-600 text-white' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'
+                }`}>
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Supply Types</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button onClick={() => { setFilter(''); setEssentialCat('') }}
+              className={`px-3 py-1 rounded-full text-sm font-medium ${!filter && !essentialCat ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
+              All
+            </button>
+            {(essentialCat
+              ? SUPPLY_TYPES.filter(t => ESSENTIAL_CATEGORIES.find(c => c.key === essentialCat)?.types.includes(t.value))
+              : SUPPLY_TYPES
+            ).map(t => (
+              <button key={t.value} onClick={() => setFilter(t.value)}
+                className={`px-3 py-1 rounded-full text-sm font-medium ${filter === t.value ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Capacity list */}

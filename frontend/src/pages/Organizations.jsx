@@ -3,8 +3,8 @@ import { fetchOrganizations } from '../utils/api'
 
 const typeLabels = {
   supplier: 'Suppliers',
-  distributor: 'Distributors',
-  nonprofit: 'Nonprofits',
+  distributor: 'Vendors',
+  nonprofit: 'Nonprofits / Government',
 }
 
 export default function Organizations({ defaultType }) {
