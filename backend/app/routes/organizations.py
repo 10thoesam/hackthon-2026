@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.organization import Organization
 from app.models.zip_need_score import ZipNeedScore
+from app.models.user import User
 
 organizations_bp = Blueprint("organizations", __name__)
 
@@ -27,6 +29,7 @@ def list_organizations():
 
 
 @organizations_bp.route("/organizations", methods=["POST"])
+@jwt_required()
 def create_organization():
     data = request.get_json()
     if not data:
@@ -62,6 +65,14 @@ def create_organization():
     )
     db.session.add(org)
     db.session.commit()
+
+    # Link the org to the current user
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if user:
+        user.organization_id = org.id
+        db.session.commit()
+
     return jsonify(org.to_dict()), 201
 
 

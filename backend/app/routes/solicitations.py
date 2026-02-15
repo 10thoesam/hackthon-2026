@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.solicitation import Solicitation
 from app.models.zip_need_score import ZipNeedScore
@@ -36,6 +37,7 @@ def list_solicitations():
 
 
 @solicitations_bp.route("/solicitations", methods=["POST"])
+@jwt_required()
 def create_solicitation():
     data = request.get_json()
     if not data:
@@ -62,6 +64,8 @@ def create_solicitation():
         except ValueError:
             return jsonify({"error": "Invalid date format for response_deadline. Use YYYY-MM-DD."}), 400
 
+    user_id = int(get_jwt_identity())
+
     sol = Solicitation(
         title=data["title"],
         description=data["description"],
@@ -76,6 +80,7 @@ def create_solicitation():
         response_deadline=response_deadline,
         source_type="commercial",
         status="open",
+        user_id=user_id,
     )
     db.session.add(sol)
     db.session.commit()
@@ -95,8 +100,16 @@ def get_solicitation(id):
 
 
 @solicitations_bp.route("/solicitations/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_solicitation(id):
     sol = Solicitation.query.get_or_404(id)
+    user_id = int(get_jwt_identity())
+
+    if sol.source_type == "government":
+        return jsonify({"error": "Government solicitations cannot be deleted"}), 403
+    if sol.user_id != user_id:
+        return jsonify({"error": "You can only delete your own solicitations"}), 403
+
     for match in sol.matches:
         db.session.delete(match)
     db.session.delete(sol)

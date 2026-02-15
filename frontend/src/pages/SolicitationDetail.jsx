@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { fetchSolicitation, generateMatches, deleteSolicitation } from '../utils/api'
+import { useAuth } from '../contexts/AuthContext'
 import MapView from '../components/MapView'
 import MatchCard from '../components/MatchCard'
 
 export default function SolicitationDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [sol, setSol] = useState(null)
   const [loading, setLoading] = useState(true)
   const [matching, setMatching] = useState(false)
@@ -79,13 +81,15 @@ export default function SolicitationDetail() {
             }`}>
               {sol.status}
             </span>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="text-sm px-3 py-1 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
-            >
-              {deleting ? 'Deleting...' : 'Delete'}
-            </button>
+            {user && sol.user_id === user.id && sol.source_type !== 'government' && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="text-sm px-3 py-1 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
+              >
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            )}
           </div>
         </div>
 

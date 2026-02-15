@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { createSolicitation } from '../utils/api'
+import { useAuth } from '../contexts/AuthContext'
 
 const CATEGORIES = [
   'fresh produce', 'cold storage', 'last mile delivery', 'warehouse distribution',
@@ -14,6 +15,7 @@ const CATEGORIES = [
 
 export default function PostContract() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [form, setForm] = useState({
     company_name: '', company_email: '', title: '', description: '',
     zip_code: '', estimated_value: '', response_deadline: '',
@@ -49,6 +51,15 @@ export default function PostContract() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-500 mb-4">You must be logged in to post a contract.</p>
+        <Link to="/login" className="text-green-700 hover:text-green-800 font-medium">Login</Link>
+      </div>
+    )
   }
 
   return (

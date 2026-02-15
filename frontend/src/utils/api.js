@@ -4,6 +4,24 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
 })
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+    }
+    return Promise.reject(error)
+  }
+)
+
 export const fetchSolicitations = (params) => api.get('/solicitations', { params })
 export const fetchSolicitation = (id) => api.get(`/solicitations/${id}`)
 export const fetchOrganizations = (params) => api.get('/organizations', { params })
@@ -15,5 +33,8 @@ export const fetchZipScores = () => api.get('/dashboard/zip-scores')
 export const createOrganization = (data) => api.post('/organizations', data)
 export const createSolicitation = (data) => api.post('/solicitations', data)
 export const deleteSolicitation = (id) => api.delete(`/solicitations/${id}`)
+export const registerUser = (data) => api.post('/auth/register', data)
+export const loginUser = (data) => api.post('/auth/login', data)
+export const fetchCurrentUser = () => api.get('/auth/me')
 
 export default api

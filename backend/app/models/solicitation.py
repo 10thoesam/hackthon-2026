@@ -22,6 +22,7 @@ class Solicitation(db.Model):
     source_type = db.Column(db.String(20), default="government")
     company_name = db.Column(db.String(200), nullable=True)
     company_email = db.Column(db.String(200), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     matches = db.relationship("MatchResult", backref="solicitation", lazy=True)
@@ -45,4 +46,5 @@ class Solicitation(db.Model):
             "source_type": self.source_type or "government",
             "company_name": self.company_name,
             "company_email": self.company_email,
+            "user_id": self.user_id,
         }

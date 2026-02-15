@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { createOrganization } from '../utils/api'
+import { useAuth } from '../contexts/AuthContext'
 
 const CAPABILITIES = [
   'fresh produce', 'cold storage', 'last mile delivery', 'warehouse distribution',
@@ -26,6 +27,7 @@ const ORG_TYPES = [
 
 export default function JoinForm() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [form, setForm] = useState({
     name: '', org_type: '', description: '', zip_code: '',
     contact_email: '', service_radius_miles: 100,
@@ -59,6 +61,15 @@ export default function JoinForm() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-500 mb-4">You must be logged in to register an organization.</p>
+        <Link to="/login" className="text-green-700 hover:text-green-800 font-medium">Login</Link>
+      </div>
+    )
   }
 
   return (
