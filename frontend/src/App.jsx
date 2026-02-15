@@ -11,8 +11,7 @@ import Register from './pages/Register'
 
 const publicNavLinks = [
   { to: '/', label: 'Dashboard' },
-  { to: '/solicitations/government', label: 'Government' },
-  { to: '/solicitations/commercial', label: 'Commercial' },
+  { to: '/solicitations', label: 'Solicitations' },
   { to: '/organizations/suppliers', label: 'Suppliers' },
   { to: '/organizations/distributors', label: 'Distributors' },
   { to: '/organizations/nonprofits', label: 'Nonprofits' },
@@ -89,8 +88,6 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/solicitations" element={<Solicitations />} />
-          <Route path="/solicitations/government" element={<Solicitations defaultSourceType="government" />} />
-          <Route path="/solicitations/commercial" element={<Solicitations defaultSourceType="commercial" />} />
           <Route path="/solicitations/:id" element={<SolicitationDetail />} />
           <Route path="/organizations/suppliers" element={<Organizations defaultType="supplier" />} />
           <Route path="/organizations/distributors" element={<Organizations defaultType="distributor" />} />

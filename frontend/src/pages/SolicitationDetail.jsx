@@ -38,8 +38,7 @@ export default function SolicitationDetail() {
     setDeleting(true)
     deleteSolicitation(id)
       .then(() => {
-        const backPath = sol?.source_type === 'commercial' ? '/solicitations/commercial' : '/solicitations/government'
-        navigate(backPath)
+        navigate('/solicitations')
       })
       .catch(() => setError('Failed to delete solicitation'))
       .finally(() => setDeleting(false))
@@ -56,10 +55,10 @@ export default function SolicitationDetail() {
   return (
     <div className="space-y-6">
       <Link
-        to={sol?.source_type === 'commercial' ? '/solicitations/commercial' : '/solicitations/government'}
+        to="/solicitations"
         className="text-green-700 hover:text-green-800 text-sm"
       >
-        &larr; Back to {sol?.source_type === 'commercial' ? 'Commercial Contracts' : 'Government Solicitations'}
+        &larr; Back to Solicitations
       </Link>
 
       <div className="bg-white border border-slate-200 rounded-xl p-6">
@@ -69,6 +68,8 @@ export default function SolicitationDetail() {
               <h1 className="text-2xl font-bold text-slate-800">{sol.title}</h1>
               {sol.source_type === 'commercial' ? (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Commercial</span>
+              ) : sol.source_type === 'state_local' ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">State/Local</span>
               ) : (
                 <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Government</span>
               )}
