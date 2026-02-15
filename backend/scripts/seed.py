@@ -1237,7 +1237,7 @@ def seed_waste_reductions():
         {"source_org_id": 2, "dest_org_id": 23, "supply_type": "water",
          "item_name": "Expiring Water Stock Rotation", "quantity_rescued": 10000, "unit": "gallons",
          "estimated_value": 12000, "source_zip": "70112", "dest_zip": "39201"},
-        {"source_org_id": 8, "dest_org_id": 31, "supply_type": "fresh_produce",
+        {"source_org_id": 8, "dest_org_id": 27, "supply_type": "fresh_produce",
          "item_name": "Surplus Organic Citrus", "quantity_rescued": 18000, "unit": "lbs",
          "estimated_value": 50400, "source_zip": "90011", "dest_zip": "85001"},
         {"source_org_id": 10, "dest_org_id": 28, "supply_type": "fresh_produce",
