@@ -30,6 +30,7 @@ export const generateMatches = (solicitationId) => api.post('/matches/generate',
 export const fetchMatches = (params) => api.get('/matches', { params })
 export const fetchDashboardStats = () => api.get('/dashboard/stats')
 export const fetchZipScores = () => api.get('/dashboard/zip-scores')
+export const fetchCrisisForecast = () => api.get('/dashboard/crisis-forecast')
 export const createOrganization = (data) => api.post('/organizations', data)
 export const createSolicitation = (data) => api.post('/solicitations', data)
 export const deleteSolicitation = (id) => api.delete(`/solicitations/${id}`)

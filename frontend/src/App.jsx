@@ -10,7 +10,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 
 const publicNavLinks = [
-  { to: '/', label: 'Dashboard' },
+  { to: '/', label: 'Crisis Dashboard' },
   { to: '/solicitations', label: 'Solicitations' },
   { to: '/organizations/suppliers', label: 'Suppliers' },
   { to: '/organizations/distributors', label: 'Distributors' },
@@ -34,8 +34,8 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-green-700">FoodMatch</span>
-              <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium">MVP</span>
+              <span className="text-2xl font-bold text-red-700">FoodMatch</span>
+              <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium animate-pulse">CRISIS</span>
             </Link>
             <div className="flex items-center gap-1">
               {navLinks.map(link => (

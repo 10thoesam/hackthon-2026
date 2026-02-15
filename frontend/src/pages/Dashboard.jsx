@@ -1,9 +1,24 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchDashboardStats, fetchZipScores, fetchSolicitations, fetchOrganizations, fetchMatches } from '../utils/api'
+import { fetchDashboardStats, fetchZipScores, fetchSolicitations, fetchOrganizations, fetchCrisisForecast } from '../utils/api'
 import { useAuth } from '../contexts/AuthContext'
 import StatsCard from '../components/StatsCard'
 import MapView from '../components/MapView'
+
+const threatColors = {
+  SEVERE: { bg: 'bg-red-700', text: 'text-red-100', border: 'border-red-500', pulse: true },
+  HIGH: { bg: 'bg-red-600', text: 'text-red-100', border: 'border-red-400', pulse: true },
+  ELEVATED: { bg: 'bg-orange-600', text: 'text-orange-100', border: 'border-orange-400', pulse: false },
+  MODERATE: { bg: 'bg-amber-600', text: 'text-amber-100', border: 'border-amber-400', pulse: false },
+}
+
+const riskBadge = (risk) => {
+  switch (risk) {
+    case 'critical': return 'bg-red-600 text-white'
+    case 'high': return 'bg-orange-500 text-white'
+    default: return 'bg-amber-500 text-white'
+  }
+}
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -11,6 +26,8 @@ export default function Dashboard() {
   const [zipScores, setZipScores] = useState([])
   const [solicitations, setSolicitations] = useState([])
   const [organizations, setOrganizations] = useState([])
+  const [forecast, setForecast] = useState(null)
+  const [forecastLoading, setForecastLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [mapLayers, setMapLayers] = useState({ need: true, solicitations: true, organizations: true, gaps: false })
 
@@ -27,9 +44,13 @@ export default function Dashboard() {
       setOrganizations(orgsRes.data)
     }).catch(console.error)
       .finally(() => setLoading(false))
+
+    fetchCrisisForecast()
+      .then(res => setForecast(res.data))
+      .catch(console.error)
+      .finally(() => setForecastLoading(false))
   }, [])
 
-  // #5 - Category breakdown (computed from solicitations)
   const categoryBreakdown = useMemo(() => {
     const counts = {}
     solicitations.forEach(s => {
@@ -44,35 +65,27 @@ export default function Dashboard() {
 
   const maxCatCount = categoryBreakdown.length > 0 ? categoryBreakdown[0][1] : 1
 
-  // #6 - Coverage gaps (high need zips with no nearby solicitations/orgs)
   const coverageGaps = useMemo(() => {
     if (!zipScores.length) return []
-
     const solZips = new Set(solicitations.map(s => s.zip_code))
     const orgZips = new Set(organizations.map(o => o.zip_code))
-
     return zipScores
       .filter(z => z.need_score >= 70 && !solZips.has(z.zip_code) && !orgZips.has(z.zip_code))
       .sort((a, b) => b.need_score - a.need_score)
       .slice(0, 8)
   }, [zipScores, solicitations, organizations])
 
-  // #9 - Risk radar alerts (simulated based on real data)
   const riskAlerts = useMemo(() => {
     const alerts = []
-
-    // High need areas without coverage
     const criticalGaps = zipScores.filter(z => z.need_score >= 85)
     if (criticalGaps.length > 0) {
       alerts.push({
         level: 'red',
         title: 'Critical Food Insecurity',
-        message: `${criticalGaps.length} areas with need scores above 85 require immediate attention`,
+        message: `${criticalGaps.length} areas with need scores above 85 require immediate intervention`,
         icon: '!',
       })
     }
-
-    // Hurricane season - Gulf Coast check
     const gulfStates = ['TX', 'LA', 'MS', 'AL', 'FL']
     const gulfSolicitations = solicitations.filter(s =>
       zipScores.find(z => z.zip_code === s.zip_code && gulfStates.includes(z.state))
@@ -85,8 +98,6 @@ export default function Dashboard() {
         icon: '~',
       })
     }
-
-    // Unmatched solicitations
     const unmatchedCount = solicitations.filter(s => s.status === 'open').length
     if (unmatchedCount > 5) {
       alerts.push({
@@ -96,8 +107,6 @@ export default function Dashboard() {
         icon: '?',
       })
     }
-
-    // Coverage gaps
     if (coverageGaps.length >= 3) {
       alerts.push({
         level: 'red',
@@ -106,19 +115,15 @@ export default function Dashboard() {
         icon: '!',
       })
     }
-
     return alerts
   }, [solicitations, zipScores, coverageGaps])
 
-  // #10 - Filtered map data
   const filteredSolicitations = mapLayers.solicitations ? solicitations : []
   const filteredOrganizations = mapLayers.organizations ? organizations : []
   const filteredZipScores = mapLayers.need ? zipScores : (mapLayers.gaps ? coverageGaps : [])
 
-  // #4 - Recent solicitations
   const recentSolicitations = solicitations.slice(0, 5)
 
-  // #3 - Highest need areas
   const highestNeedAreas = useMemo(() => {
     return [...zipScores].sort((a, b) => b.need_score - a.need_score).slice(0, 8)
   }, [zipScores])
@@ -126,51 +131,127 @@ export default function Dashboard() {
   const toggleLayer = (layer) => setMapLayers(prev => ({ ...prev, [layer]: !prev[layer] }))
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-slate-500">Loading dashboard...</div>
+    return <div className="flex items-center justify-center h-64 text-slate-500">Loading crisis dashboard...</div>
   }
+
+  const tc = forecast ? (threatColors[forecast.threat_level] || threatColors.ELEVATED) : threatColors.ELEVATED
 
   return (
     <div className="space-y-6">
 
-      {/* #1 - Hero Banner */}
-      <div className="bg-gradient-to-r from-green-700 via-green-600 to-emerald-600 rounded-2xl p-8 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">FoodMatch</h1>
-            <p className="text-green-100 mt-2 text-lg">AI-powered food supply chain resilience for disaster preparedness</p>
-            <p className="text-green-200 mt-1 text-sm">Connecting government agencies, commercial distributors, and nonprofits to ensure food reaches those who need it most.</p>
-            <div className="flex gap-3 mt-4">
+      {/* HERO - Crisis Command Center */}
+      <div className="bg-gradient-to-r from-slate-900 via-red-950 to-slate-900 rounded-2xl p-8 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-4 right-4 w-64 h-64 bg-red-500 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-4 left-4 w-48 h-48 bg-orange-500 rounded-full blur-3xl"></div>
+        </div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-bold">FoodMatch Crisis Command</h1>
+              {forecast && (
+                <span className={`text-xs px-3 py-1 rounded-full font-bold ${tc.bg} ${tc.text} ${tc.pulse ? 'animate-pulse' : ''}`}>
+                  THREAT LEVEL: {forecast.threat_level}
+                </span>
+              )}
+            </div>
+            <p className="text-red-200 text-lg font-medium">
+              {forecast ? forecast.headline : 'AI-powered food crisis detection and rapid response coordination'}
+            </p>
+            <p className="text-slate-400 mt-1 text-sm max-w-2xl">
+              {forecast ? forecast.situation_summary : 'Monitoring food insecurity across the nation. Connecting agencies, distributors, and nonprofits to prevent catastrophic food shortages.'}
+            </p>
+            <div className="flex gap-3 mt-5">
               {user ? (
                 <>
-                  <Link to="/post-contract" className="bg-white text-green-700 px-5 py-2 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
-                    Post a Contract
+                  <Link to="/post-contract" className="bg-red-600 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-red-700 transition-colors">
+                    Deploy Emergency Contract
                   </Link>
-                  <Link to="/join" className="bg-green-800 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-green-900 transition-colors border border-green-500">
-                    Register Organization
+                  <Link to="/join" className="bg-slate-700 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-slate-600 transition-colors border border-slate-500">
+                    Register Response Org
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/register" className="bg-white text-green-700 px-5 py-2 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors">
-                    Join the Network
+                  <Link to="/register" className="bg-red-600 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-red-700 transition-colors">
+                    Join Crisis Response
                   </Link>
-                  <Link to="/solicitations/government" className="bg-green-800 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-green-900 transition-colors border border-green-500">
-                    Browse Opportunities
+                  <Link to="/solicitations" className="bg-slate-700 text-white px-5 py-2 rounded-lg font-medium text-sm hover:bg-slate-600 transition-colors border border-slate-500">
+                    View Active Operations
                   </Link>
                 </>
               )}
             </div>
           </div>
-          <div className="hidden md:flex flex-col items-end text-right">
-            <div className="text-5xl font-bold">{stats?.avg_need_score || 0}</div>
-            <div className="text-green-200 text-sm">Avg National Need Score</div>
-            <div className="text-4xl font-bold mt-2">{zipScores.length}</div>
-            <div className="text-green-200 text-sm">Monitored ZIP Codes</div>
+          <div className="hidden md:flex flex-col items-end text-right gap-3">
+            <div>
+              <div className="text-5xl font-bold text-red-400">{stats?.population_at_risk ? (stats.population_at_risk / 1000000).toFixed(1) + 'M' : stats?.avg_need_score || 0}</div>
+              <div className="text-slate-400 text-sm">{stats?.population_at_risk ? 'People at Risk' : 'Avg Need Score'}</div>
+            </div>
+            <div>
+              <div className="text-3xl font-bold text-orange-400">{stats?.critical_zones || zipScores.filter(z => z.need_score >= 80).length}</div>
+              <div className="text-slate-400 text-sm">Critical Zones</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-slate-300">{zipScores.length}</div>
+              <div className="text-slate-400 text-sm">Monitored Areas</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* #9 - Risk Radar */}
+      {/* AI Threat Assessment */}
+      {forecast && forecast.predictions && forecast.predictions.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            AI Threat Assessment
+          </h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            {forecast.predictions.map((pred, i) => (
+              <div key={i} className={`rounded-xl border p-4 ${
+                pred.risk === 'critical' ? 'bg-red-50 border-red-200' :
+                pred.risk === 'high' ? 'bg-orange-50 border-orange-200' :
+                'bg-amber-50 border-amber-200'
+              }`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${riskBadge(pred.risk)}`}>
+                    {pred.risk}
+                  </span>
+                  <span className="font-semibold text-sm text-slate-800">{pred.region}</span>
+                </div>
+                <p className="text-sm text-slate-700">{pred.prediction}</p>
+                <p className="text-xs text-slate-500 mt-2 italic">Action: {pred.recommended_action}</p>
+              </div>
+            ))}
+          </div>
+          {forecast.immediate_actions && (
+            <div className="mt-3 bg-slate-900 text-white rounded-xl p-4">
+              <h3 className="text-sm font-bold text-red-400 mb-2">IMMEDIATE ACTIONS REQUIRED</h3>
+              <ul className="space-y-1">
+                {forecast.immediate_actions.map((action, i) => (
+                  <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
+                    <span className="text-red-400 font-bold shrink-0">{i + 1}.</span>
+                    {action}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-slate-500 mt-3">{forecast.estimated_impact}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {forecastLoading && (
+        <div className="bg-slate-100 rounded-xl p-6 text-center">
+          <div className="animate-pulse text-slate-500">
+            <p className="font-medium">AI analyzing threat data...</p>
+            <p className="text-sm mt-1">Generating crisis forecast from {zipScores.length} monitored zones</p>
+          </div>
+        </div>
+      )}
+
+      {/* Risk Radar */}
       {riskAlerts.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-slate-700 mb-3 flex items-center gap-2">
@@ -208,17 +289,17 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* #2 - Stats Cards with icons and subtitles */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatsCard
-          label="Solicitations"
+          label="Active Operations"
           value={stats?.total_solicitations || 0}
-          subtitle={`${stats?.open_count || 0} open`}
+          subtitle={`${stats?.open_count || 0} requiring response`}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
           color="blue"
         />
         <StatsCard
-          label="Organizations"
+          label="Response Orgs"
           value={stats?.total_organizations || 0}
           subtitle={`${stats?.suppliers || 0}S / ${stats?.distributors || 0}D / ${stats?.nonprofits || 0}N`}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
@@ -232,18 +313,18 @@ export default function Dashboard() {
           color="purple"
         />
         <StatsCard
-          label="Avg Need Score"
-          value={stats?.avg_need_score || 0}
-          subtitle={`${zipScores.filter(z => z.need_score >= 80).length} critical areas`}
+          label="People at Risk"
+          value={stats?.population_at_risk ? `${(stats.population_at_risk / 1000).toFixed(0)}K` : '0'}
+          subtitle={`${stats?.critical_zones || 0} critical zones`}
           icon={<svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>}
-          color="orange"
+          color="red"
         />
       </div>
 
-      {/* #7 - Government vs Commercial Split */}
+      {/* Government vs Commercial Split + Match Quality */}
       <div className="grid md:grid-cols-2 gap-4">
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Solicitation Breakdown</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Operations Breakdown</h3>
           <div className="flex items-center gap-4 mb-3">
             <div className="flex-1">
               <div className="flex items-center justify-between text-sm mb-1">
@@ -271,13 +352,12 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="text-xs text-slate-400">
-            {stats?.open_count || 0} of {stats?.total_solicitations || 0} currently open
+            {stats?.open_count || 0} of {stats?.total_solicitations || 0} currently active
           </div>
         </div>
 
-        {/* #8 - Match Quality Summary */}
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Match Quality</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">AI Match Quality</h3>
           <div className="flex items-center gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">{stats?.avg_match_score || 0}</div>
@@ -311,21 +391,20 @@ export default function Dashboard() {
             </div>
           )}
           {stats?.total_matches === 0 && (
-            <p className="text-xs text-slate-400 mt-3">No matches generated yet. Run "Find Matches" on a solicitation to start.</p>
+            <p className="text-xs text-slate-400 mt-3">No matches generated yet. Run "Find Matches" on a solicitation to deploy AI matching.</p>
           )}
         </div>
       </div>
 
-      {/* #3 - Split Map + Highest Need Areas & #10 - Map Filters */}
+      {/* Map + Highest Need Areas */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-slate-700">National Overview</h2>
-          {/* #10 - Interactive Map Filters */}
+          <h2 className="text-lg font-semibold text-slate-700">Crisis Map — National Overview</h2>
           <div className="flex gap-2">
             {[
               { key: 'need', label: 'Need Scores', activeColor: 'bg-orange-100 text-orange-700 border-orange-300' },
-              { key: 'solicitations', label: 'Solicitations', activeColor: 'bg-blue-100 text-blue-700 border-blue-300' },
-              { key: 'organizations', label: 'Organizations', activeColor: 'bg-green-100 text-green-700 border-green-300' },
+              { key: 'solicitations', label: 'Operations', activeColor: 'bg-blue-100 text-blue-700 border-blue-300' },
+              { key: 'organizations', label: 'Response Orgs', activeColor: 'bg-green-100 text-green-700 border-green-300' },
               { key: 'gaps', label: 'Coverage Gaps', activeColor: 'bg-red-100 text-red-700 border-red-300' },
             ].map(f => (
               <button
@@ -341,7 +420,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* #3 - Split layout: Map + Highest Need List */}
         <div className="grid md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <MapView
@@ -382,12 +460,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom row: Recent Activity + Categories + Coverage Gaps */}
+      {/* Bottom row */}
       <div className="grid md:grid-cols-3 gap-4">
 
-        {/* #4 - Recent Activity Feed */}
+        {/* Recent Activity */}
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Latest Solicitations</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Latest Operations</h3>
           <div className="space-y-3">
             {recentSolicitations.map(sol => (
               <Link
@@ -401,9 +479,11 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-500 truncate">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
                   </div>
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0 ml-2 ${
-                    sol.source_type === 'commercial' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                    sol.source_type === 'commercial' ? 'bg-purple-100 text-purple-700' :
+                    sol.source_type === 'state_local' ? 'bg-amber-100 text-amber-700' :
+                    'bg-blue-100 text-blue-700'
                   }`}>
-                    {sol.source_type === 'commercial' ? 'COM' : 'GOV'}
+                    {sol.source_type === 'commercial' ? 'COM' : sol.source_type === 'state_local' ? 'S/L' : 'GOV'}
                   </span>
                 </div>
                 {sol.estimated_value && (
@@ -412,14 +492,14 @@ export default function Dashboard() {
               </Link>
             ))}
             {recentSolicitations.length === 0 && (
-              <p className="text-sm text-slate-400">No solicitations yet.</p>
+              <p className="text-sm text-slate-400">No active operations.</p>
             )}
           </div>
         </div>
 
-        {/* #5 - Category Breakdown */}
+        {/* Category Breakdown */}
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-3">Top Categories</h3>
+          <h3 className="text-sm font-semibold text-slate-700 mb-3">Response Categories</h3>
           <div className="space-y-2">
             {categoryBreakdown.map(([cat, count]) => (
               <div key={cat}>
@@ -441,10 +521,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* #6 - Coverage Gaps */}
+        {/* Coverage Gaps */}
         <div className="bg-white border border-slate-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-slate-700 mb-1">Coverage Gaps</h3>
-          <p className="text-xs text-slate-400 mb-3">High-need areas with no active solicitations or organizations</p>
+          <h3 className="text-sm font-semibold text-red-700 mb-1">Unprotected Zones</h3>
+          <p className="text-xs text-slate-400 mb-3">Critical areas with no active operations or response organizations</p>
           {coverageGaps.length > 0 ? (
             <div className="space-y-2">
               {coverageGaps.map(z => (
@@ -462,8 +542,8 @@ export default function Dashboard() {
           ) : (
             <div className="text-center py-6">
               <div className="text-2xl mb-1">&#10003;</div>
-              <p className="text-sm text-green-600 font-medium">All high-need areas covered</p>
-              <p className="text-xs text-slate-400">Every area with need score 70+ has active solicitations or organizations</p>
+              <p className="text-sm text-green-600 font-medium">All critical areas covered</p>
+              <p className="text-xs text-slate-400">Every area with need score 70+ has active operations</p>
             </div>
           )}
         </div>
