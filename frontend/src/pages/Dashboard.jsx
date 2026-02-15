@@ -140,25 +140,22 @@ export default function Dashboard() {
     <div className="space-y-6">
 
       {/* HERO - Crisis Command Center */}
-      <div className="bg-gradient-to-r from-slate-900 via-red-950 to-slate-900 rounded-2xl p-8 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-4 right-4 w-64 h-64 bg-red-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-4 left-4 w-48 h-48 bg-orange-500 rounded-full blur-3xl"></div>
-        </div>
+      <div style={{ background: '#1a1a2e' }} className="rounded-2xl p-8 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 80% 20%, #991b1b 0%, transparent 50%), radial-gradient(circle at 20% 80%, #9a3412 0%, transparent 50%)' }}></div>
         <div className="relative flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">FoodMatch Crisis Command</h1>
+              <h1 className="text-3xl font-bold text-white">FoodMatch Crisis Command</h1>
               {forecast && (
                 <span className={`text-xs px-3 py-1 rounded-full font-bold ${tc.bg} ${tc.text} ${tc.pulse ? 'animate-pulse' : ''}`}>
                   THREAT LEVEL: {forecast.threat_level}
                 </span>
               )}
             </div>
-            <p className="text-red-200 text-lg font-medium">
+            <p className="text-orange-300 text-lg font-medium">
               {forecast ? forecast.headline : 'AI-powered food crisis detection and rapid response coordination'}
             </p>
-            <p className="text-slate-400 mt-1 text-sm max-w-2xl">
+            <p className="text-slate-300 mt-1 text-sm max-w-2xl">
               {forecast ? forecast.situation_summary : 'Monitoring food insecurity across the nation. Connecting agencies, distributors, and nonprofits to prevent catastrophic food shortages.'}
             </p>
             <div className="flex gap-3 mt-5">
@@ -185,16 +182,16 @@ export default function Dashboard() {
           </div>
           <div className="hidden md:flex flex-col items-end text-right gap-3">
             <div>
-              <div className="text-5xl font-bold text-red-400">{stats?.population_at_risk ? (stats.population_at_risk / 1000000).toFixed(1) + 'M' : stats?.avg_need_score || 0}</div>
-              <div className="text-slate-400 text-sm">{stats?.population_at_risk ? 'People at Risk' : 'Avg Need Score'}</div>
+              <div className="text-5xl font-bold text-red-300">{stats?.population_at_risk ? (stats.population_at_risk / 1000000).toFixed(1) + 'M' : stats?.avg_need_score || 0}</div>
+              <div className="text-slate-300 text-sm">{stats?.population_at_risk ? 'People at Risk' : 'Avg Need Score'}</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-orange-400">{stats?.critical_zones || zipScores.filter(z => z.need_score >= 80).length}</div>
-              <div className="text-slate-400 text-sm">Critical Zones</div>
+              <div className="text-3xl font-bold text-orange-300">{stats?.critical_zones || zipScores.filter(z => z.need_score >= 80).length}</div>
+              <div className="text-slate-300 text-sm">Critical Zones</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-slate-300">{zipScores.length}</div>
-              <div className="text-slate-400 text-sm">Monitored Areas</div>
+              <div className="text-2xl font-bold text-white">{zipScores.length}</div>
+              <div className="text-slate-300 text-sm">Monitored Areas</div>
             </div>
           </div>
         </div>
