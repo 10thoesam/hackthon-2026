@@ -40,62 +40,62 @@ export default function Register() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-12">
-      <h1 className="text-2xl font-bold text-slate-800 mb-1">Create Account</h1>
-      <p className="text-slate-500 mb-6">Join FoodMatch to post contracts and manage your organization.</p>
+    <div className="max-w-sm mx-auto mt-16">
+      <h1 className="text-xl font-semibold text-slate-800 mb-1">Create Account</h1>
+      <p className="text-sm text-slate-400 mb-6">Join FoodMatch to post contracts and manage your organization.</p>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">{error}</div>
+        <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+          <label className="block text-sm text-slate-600 mb-1">Full Name</label>
           <input
             type="text" required value={form.name}
             onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
             placeholder="John Smith"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+          <label className="block text-sm text-slate-600 mb-1">Email</label>
           <input
             type="email" required value={form.email}
             onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
             placeholder="you@example.com"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+          <label className="block text-sm text-slate-600 mb-1">Password</label>
           <input
             type="password" required value={form.password}
             onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
             placeholder="At least 6 characters"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Confirm Password</label>
+          <label className="block text-sm text-slate-600 mb-1">Confirm Password</label>
           <input
             type="password" required value={form.confirmPassword}
             onChange={e => setForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
             placeholder="Repeat your password"
           />
         </div>
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-2.5 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 transition-colors"
         >
           {submitting ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="text-sm text-slate-500 mt-4 text-center">
-        Already have an account? <Link to="/login" className="text-green-700 hover:text-green-800 font-medium">Sign in</Link>
+      <p className="text-sm text-slate-400 mt-4 text-center">
+        Already have an account? <Link to="/login" className="text-slate-700 hover:text-slate-900 font-medium">Sign in</Link>
       </p>
     </div>
   )

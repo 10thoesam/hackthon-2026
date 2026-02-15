@@ -15,14 +15,8 @@ const sourceTypeFilters = [
 ]
 
 const sourceTypeBadge = (type) => {
-  switch (type) {
-    case 'commercial':
-      return <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Commercial</span>
-    case 'state_local':
-      return <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">State/Local</span>
-    default:
-      return <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Government</span>
-  }
+  const label = type === 'commercial' ? 'Commercial' : type === 'state_local' ? 'State/Local' : 'Government'
+  return <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">{label}</span>
 }
 
 export default function Solicitations() {
@@ -50,8 +44,8 @@ export default function Solicitations() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Solicitations</h1>
-        <p className="text-slate-500">Food distribution opportunities</p>
+        <h1 className="text-xl font-semibold text-slate-800">Solicitations</h1>
+        <p className="text-sm text-slate-400">Food distribution opportunities</p>
       </div>
 
       <FilterBar
@@ -65,38 +59,38 @@ export default function Solicitations() {
       />
 
       {loading ? (
-        <div className="text-center py-12 text-slate-500">Loading...</div>
+        <div className="text-center py-12 text-slate-400">Loading...</div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {solicitations.map(sol => (
             <Link
               key={sol.id}
               to={`/solicitations/${sol.id}`}
-              className="block bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md transition-shadow"
+              className="block bg-white border border-slate-200 rounded-lg p-5 hover:border-slate-300 transition-colors"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-slate-800 text-lg">{sol.title}</h3>
+                    <h3 className="font-medium text-slate-800">{sol.title}</h3>
                     {sourceTypeBadge(sol.source_type)}
                   </div>
-                  <p className="text-sm text-slate-500 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
+                  <p className="text-sm text-slate-400 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
                   <p className="text-sm text-slate-600 mt-2 line-clamp-2">{sol.description}</p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {(sol.categories || []).map(cat => (
-                      <span key={cat} className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full">
+                      <span key={cat} className="bg-slate-50 text-slate-500 text-xs px-2 py-0.5 rounded-md">
                         {cat}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div className="text-right ml-4 shrink-0">
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    sol.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                  <span className={`text-xs px-2 py-1 rounded-md font-medium ${
+                    sol.status === 'open' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'
                   }`}>
                     {sol.status}
                   </span>
-                  <p className="text-sm font-semibold text-slate-700 mt-2">{formatCurrency(sol.estimated_value)}</p>
+                  <p className="text-sm font-medium text-slate-700 mt-2">{formatCurrency(sol.estimated_value)}</p>
                   <p className="text-xs text-slate-400 mt-1">ZIP: {sol.zip_code}</p>
                   {sol.response_deadline && (
                     <p className="text-xs text-slate-400">Due: {sol.response_deadline}</p>
@@ -106,7 +100,7 @@ export default function Solicitations() {
             </Link>
           ))}
           {solicitations.length === 0 && (
-            <div className="text-center py-12 text-slate-500">No solicitations found</div>
+            <div className="text-center py-12 text-slate-400">No solicitations found</div>
           )}
         </div>
       )}

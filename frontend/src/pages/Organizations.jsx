@@ -21,48 +21,40 @@ export default function Organizations({ defaultType }) {
       .finally(() => setLoading(false))
   }, [defaultType])
 
-  const typeBadge = {
-    supplier: 'bg-blue-100 text-blue-700',
-    distributor: 'bg-purple-100 text-purple-700',
-    nonprofit: 'bg-green-100 text-green-700',
-  }
-
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">{typeLabels[defaultType] || 'Organizations'}</h1>
-        <p className="text-slate-500">{defaultType ? `Showing all ${typeLabels[defaultType].toLowerCase()}` : 'Suppliers, distributors, and nonprofits'}</p>
+        <h1 className="text-xl font-semibold text-slate-800">{typeLabels[defaultType] || 'Organizations'}</h1>
+        <p className="text-sm text-slate-400">{defaultType ? `Showing all ${typeLabels[defaultType].toLowerCase()}` : 'Suppliers, distributors, and nonprofits'}</p>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-500">Loading...</div>
+        <div className="text-center py-12 text-slate-400">Loading...</div>
       ) : (
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-2 gap-3">
           {organizations.map(org => (
-            <div key={org.id} className="bg-white border border-slate-200 rounded-xl p-5">
+            <div key={org.id} className="bg-white border border-slate-200 rounded-lg p-5">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-slate-800">{org.name}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeBadge[org.org_type] || ''}`}>
+                <h3 className="font-medium text-slate-800">{org.name}</h3>
+                <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">
                   {org.org_type}
                 </span>
               </div>
-              <p className="text-sm text-slate-600 mb-3">{org.description}</p>
+              <p className="text-sm text-slate-500 mb-3">{org.description}</p>
 
               <div className="mb-2">
-                <span className="text-xs text-slate-500">Capabilities:</span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {(org.capabilities || []).map(cap => (
-                    <span key={cap} className="bg-blue-50 text-blue-600 text-xs px-2 py-0.5 rounded-full">{cap}</span>
+                    <span key={cap} className="bg-slate-50 text-slate-500 text-xs px-2 py-0.5 rounded-md">{cap}</span>
                   ))}
                 </div>
               </div>
 
               {org.certifications?.length > 0 && (
                 <div className="mb-2">
-                  <span className="text-xs text-slate-500">Certifications:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {org.certifications.map(cert => (
-                      <span key={cert} className="bg-amber-50 text-amber-700 text-xs px-2 py-0.5 rounded-full">{cert}</span>
+                      <span key={cert} className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-md">{cert}</span>
                     ))}
                   </div>
                 </div>
@@ -76,7 +68,7 @@ export default function Organizations({ defaultType }) {
             </div>
           ))}
           {organizations.length === 0 && (
-            <div className="text-center py-12 text-slate-500 col-span-2">No organizations found</div>
+            <div className="text-center py-12 text-slate-400 col-span-2">No organizations found</div>
           )}
         </div>
       )}
