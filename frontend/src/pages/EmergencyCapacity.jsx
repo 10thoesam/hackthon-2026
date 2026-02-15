@@ -61,7 +61,7 @@ export default function EmergencyCapacity() {
 
   useEffect(() => { load() }, [filter, essentialCat])
   useEffect(() => {
-    fetchOrganizations({ org_type: 'supplier' })
+    fetchOrganizations({ type: 'supplier' })
       .then(res => setOrgs(res.data))
       .catch(() => {})
   }, [])

@@ -21,7 +21,7 @@ export default function DistributorPortal() {
   const [matchLoading, setMatchLoading] = useState(false)
 
   useEffect(() => {
-    fetchOrganizations({ org_type: 'distributor' })
+    fetchOrganizations({ type: 'distributor' })
       .then(res => setDistributors(res.data))
       .catch(console.error)
       .finally(() => setInitLoading(false))

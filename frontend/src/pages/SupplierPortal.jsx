@@ -22,7 +22,7 @@ export default function SupplierPortal() {
   const [matchLoading, setMatchLoading] = useState(false)
 
   useEffect(() => {
-    fetchOrganizations({ org_type: 'supplier' })
+    fetchOrganizations({ type: 'supplier' })
       .then(res => setSuppliers(res.data))
       .catch(console.error)
       .finally(() => setInitLoading(false))
