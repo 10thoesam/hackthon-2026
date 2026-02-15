@@ -66,24 +66,26 @@ export default function JoinForm() {
   if (!user) {
     return (
       <div className="text-center py-12">
-        <p className="text-slate-400 mb-4">You must be logged in to register an organization.</p>
-        <Link to="/login" className="text-slate-700 hover:text-slate-900 font-medium">Login</Link>
+        <p className="text-gray-400 mb-4">You must be logged in to register an organization.</p>
+        <Link to="/login" className="text-amber-400 hover:text-amber-300 font-bold">Login</Link>
       </div>
     )
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-xl font-semibold text-slate-800 mb-1">Join FoodMatch</h1>
-      <p className="text-sm text-slate-400 mb-6">Register your organization to get matched with food distribution opportunities.</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 mb-6">
+        <h1 className="text-xl font-bold text-white mb-1">Join FoodMatch</h1>
+        <p className="text-sm text-gray-400">Register your organization to get matched with food distribution opportunities.</p>
+      </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-6">{error}</div>
+        <div className="bg-red-600/20 text-red-400 text-sm px-4 py-3 rounded-lg mb-6">{error}</div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm text-slate-600 mb-2">Organization Type *</label>
+          <label className="block text-sm text-gray-300 mb-2">Organization Type *</label>
           <div className="grid grid-cols-3 gap-3">
             {ORG_TYPES.map(t => (
               <button
@@ -92,12 +94,12 @@ export default function JoinForm() {
                 onClick={() => update('org_type', t.value)}
                 className={`p-3 rounded-lg border text-left transition-colors ${
                   form.org_type === t.value
-                    ? 'border-slate-900 bg-slate-50'
-                    : 'border-slate-200 hover:border-slate-300'
+                    ? 'border-amber-500 bg-amber-500/10'
+                    : 'border-gray-700 bg-gray-900 hover:border-gray-600'
                 }`}
               >
-                <div className="font-medium text-sm text-slate-700">{t.label}</div>
-                <div className="text-xs text-slate-400 mt-0.5">{t.desc}</div>
+                <div className="font-bold text-sm text-white">{t.label}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{t.desc}</div>
               </button>
             ))}
           </div>
@@ -105,70 +107,70 @@ export default function JoinForm() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-600 mb-1">Organization Name *</label>
+            <label className="block text-sm text-gray-300 mb-1">Organization Name *</label>
             <input
               type="text" required value={form.name}
               onChange={e => update('name', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-1 focus:ring-amber-500 outline-none"
               placeholder="e.g. Delta Fresh Foods Co-op"
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-600 mb-1">Contact Email *</label>
+            <label className="block text-sm text-gray-300 mb-1">Contact Email *</label>
             <input
               type="email" required value={form.contact_email}
               onChange={e => update('contact_email', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-1 focus:ring-amber-500 outline-none"
               placeholder="contact@example.com"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-slate-600 mb-1">Description</label>
+          <label className="block text-sm text-gray-300 mb-1">Description</label>
           <textarea
             rows={3} value={form.description}
             onChange={e => update('description', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-1 focus:ring-amber-500 outline-none"
             placeholder="Describe your organization and what you do..."
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-slate-600 mb-1">ZIP Code *</label>
+            <label className="block text-sm text-gray-300 mb-1">ZIP Code *</label>
             <input
               type="text" required value={form.zip_code}
               onChange={e => update('zip_code', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-1 focus:ring-amber-500 outline-none"
               placeholder="e.g. 38614"
               maxLength={10}
             />
           </div>
           <div>
-            <label className="block text-sm text-slate-600 mb-1">Service Radius (miles)</label>
+            <label className="block text-sm text-gray-300 mb-1">Service Radius (miles)</label>
             <input
               type="number" value={form.service_radius_miles}
               onChange={e => update('service_radius_miles', Number(e.target.value))}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-slate-400 focus:border-slate-400 outline-none"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white focus:ring-1 focus:ring-amber-500 outline-none"
               min={1} max={2000}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm text-slate-600 mb-2">
-            Capabilities <span className="text-slate-300">(select all that apply)</span>
+          <label className="block text-sm text-gray-300 mb-2">
+            Capabilities <span className="text-gray-500">(select all that apply)</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {CAPABILITIES.map(cap => (
               <button
                 type="button" key={cap}
                 onClick={() => toggleItem('capabilities', cap)}
-                className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                   form.capabilities.includes(cap)
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
                 {cap}
@@ -178,18 +180,18 @@ export default function JoinForm() {
         </div>
 
         <div>
-          <label className="block text-sm text-slate-600 mb-2">
-            Certifications <span className="text-slate-300">(select all that apply)</span>
+          <label className="block text-sm text-gray-300 mb-2">
+            Certifications <span className="text-gray-500">(select all that apply)</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {CERTIFICATIONS.map(cert => (
               <button
                 type="button" key={cert}
                 onClick={() => toggleItem('certifications', cert)}
-                className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                   form.certifications.includes(cert)
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-gray-800 text-gray-400 hover:text-white'
                 }`}
               >
                 {cert}
@@ -201,7 +203,7 @@ export default function JoinForm() {
         <button
           type="submit"
           disabled={submitting || !form.org_type}
-          className="w-full py-2.5 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-2.5 bg-amber-500 text-black text-sm font-bold rounded-lg hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {submitting ? 'Registering...' : 'Register Organization'}
         </button>

@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import Dashboard from './pages/Dashboard'
@@ -16,78 +17,130 @@ import SupplierPortal from './pages/SupplierPortal'
 import DistributorPortal from './pages/DistributorPortal'
 import FederalPortal from './pages/FederalPortal'
 
-const publicNavLinks = [
-  { to: '/', label: 'Dashboard' },
-  { to: '/solicitations', label: 'Solicitations' },
-  { to: '/predictions', label: 'Predictions' },
-  { to: '/crisis', label: 'Crisis' },
-  { to: '/emergency', label: 'Emergency' },
-  { to: '/rfq', label: 'Cost Estimator' },
-  { to: '/portal/suppliers', label: 'Suppliers' },
-  { to: '/portal/distributors', label: 'Distributors' },
-  { to: '/portal/federal', label: 'Federal/Nonprofit' },
-]
+function Dropdown({ label, items, isActive }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
 
-const authNavLinks = [
-  { to: '/join', label: 'Join' },
-  { to: '/post-contract', label: 'Post Contract' },
-]
+  useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+          isActive
+            ? 'bg-amber-500/20 text-amber-300'
+            : 'text-gray-300 hover:text-white hover:bg-white/10'
+        }`}
+      >
+        {label}
+        <svg className={`w-3 h-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-56 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50 py-1">
+          {items.map(item => (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2.5 text-sm text-gray-300 hover:bg-amber-500/20 hover:text-amber-300 transition-colors"
+            >
+              <span className="font-medium">{item.label}</span>
+              {item.desc && <span className="block text-xs text-gray-500 mt-0.5">{item.desc}</span>}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function App() {
   const location = useLocation()
   const { user, logout } = useAuth()
+  const path = location.pathname
 
-  const navLinks = user ? [...publicNavLinks, ...authNavLinks] : publicNavLinks
+  const isPortalActive = path.startsWith('/portal/')
+  const isOpsActive = ['/crisis', '/emergency', '/predictions'].some(p => path.startsWith(p))
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <nav className="bg-white border-b border-slate-200">
+    <div className="min-h-screen bg-gray-950">
+      {/* Top warning bar */}
+      <div className="bg-amber-500 text-black text-center py-1 text-xs font-bold tracking-wide">
+        FOODMATCH EMERGENCY DISTRIBUTION COORDINATION SYSTEM — AUTHORIZED PERSONNEL
+      </div>
+
+      <nav className="bg-gray-900 border-b border-gray-700/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14">
-            <Link to="/" className="text-lg font-semibold text-slate-900 tracking-tight">
-              FoodMatch
-            </Link>
+          <div className="flex items-center justify-between h-12">
             <div className="flex items-center gap-1">
-              {navLinks.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                    (location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to)))
-                      ? 'bg-slate-100 text-slate-900 font-medium'
-                      : 'text-slate-500 hover:text-slate-700'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <Link to="/" className="text-lg font-bold text-white tracking-tight mr-4 flex items-center gap-2">
+                <span className="bg-red-600 text-white text-xs font-black px-1.5 py-0.5 rounded">FM</span>
+                FoodMatch
+              </Link>
+
+              <Link to="/" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                path === '/' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}>Command</Link>
+
+              <Link to="/solicitations" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                path.startsWith('/solicitations') ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}>Solicitations</Link>
+
+              <Dropdown label="Portals" isActive={isPortalActive} items={[
+                { to: '/portal/suppliers', label: 'Supplier Portal', desc: 'Find matched contracts & distributors' },
+                { to: '/portal/distributors', label: 'Distributor Portal', desc: 'Find solicitations & suppliers' },
+                { to: '/portal/federal', label: 'Federal / Nonprofit', desc: 'Vendor directory & RFQ matching' },
+              ]} />
+
+              <Dropdown label="Operations" isActive={isOpsActive} items={[
+                { to: '/crisis', label: 'Crisis Dashboard', desc: 'Regional capacity & activation' },
+                { to: '/emergency', label: 'Emergency Registry', desc: 'Pre-disaster supply registration' },
+                { to: '/predictions', label: 'AI Predictions', desc: 'Food insecurity forecasting' },
+              ]} />
+
+              <Link to="/rfq" className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                path === '/rfq' ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}>Sample RFQ</Link>
+            </div>
+
+            <div className="flex items-center gap-2">
               {user ? (
-                <div className="flex items-center gap-2 ml-3 pl-3 border-l border-slate-200">
-                  <span className="text-sm text-slate-500">{user.name}</span>
-                  <button
-                    onClick={logout}
-                    className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
-                  >
+                <>
+                  <Link to="/post-contract"
+                    className="px-3 py-1.5 rounded text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors">
+                    + Contract
+                  </Link>
+                  <Link to="/join"
+                    className="px-3 py-1.5 rounded text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-colors">
+                    Register Org
+                  </Link>
+                  <div className="h-5 w-px bg-gray-700 mx-1"></div>
+                  <span className="text-sm text-amber-400 font-medium">{user.name}</span>
+                  <button onClick={logout}
+                    className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
                     Logout
                   </button>
-                </div>
+                </>
               ) : (
-                <div className="flex items-center gap-1 ml-3 pl-3 border-l border-slate-200">
-                  <Link
-                    to="/login"
-                    className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                      location.pathname === '/login' ? 'bg-slate-100 text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'
-                    }`}
-                  >
+                <>
+                  <Link to="/login"
+                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                      path === '/login' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
+                    }`}>
                     Login
                   </Link>
-                  <Link
-                    to="/register"
-                    className="px-3 py-1.5 rounded-md text-sm font-medium bg-slate-900 text-white hover:bg-slate-800 transition-colors"
-                  >
+                  <Link to="/register"
+                    className="px-3 py-1.5 rounded text-sm font-bold bg-amber-500 text-black hover:bg-amber-400 transition-colors">
                     Register
                   </Link>
-                </div>
+                </>
               )}
             </div>
           </div>

@@ -20,24 +20,26 @@ const SUPPLY_OPTIONS = [
   { value: 'hygiene_supplies', label: 'Hygiene Kits', unit: 'kits' },
 ]
 
+const $ = (v) => typeof v === 'number' ? '$' + v.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) : 'N/A'
+const $k = (v) => typeof v === 'number' ? '$' + v.toLocaleString() : 'N/A'
+
 export default function FederalPortal() {
-  const [tab, setTab] = useState('vendors') // vendors, match, rfq
+  const [tab, setTab] = useState('vendors')
   const [vendors, setVendors] = useState([])
   const [vendorFilter, setVendorFilter] = useState({ org_type: '', capability: '', small_business: '' })
   const [vendorLoading, setVendorLoading] = useState(true)
   const [expandedVendor, setExpandedVendor] = useState(null)
 
-  // Match state
   const [matchZip, setMatchZip] = useState('')
   const [matchCategories, setMatchCategories] = useState([])
   const [matchResults, setMatchResults] = useState(null)
   const [matchLoading, setMatchLoading] = useState(false)
 
-  // RFQ state
   const [rfqZip, setRfqZip] = useState('')
   const [rfqItems, setRfqItems] = useState([{ supply_type: 'water', quantity: 1000 }])
   const [rfq, setRfq] = useState(null)
   const [rfqLoading, setRfqLoading] = useState(false)
+  const [rfqTab, setRfqTab] = useState('suppliers')
 
   useEffect(() => { loadVendors() }, [vendorFilter])
 
@@ -74,132 +76,123 @@ export default function FederalPortal() {
   }
 
   const toggleCategory = (cat) => {
-    setMatchCategories(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-    )
+    setMatchCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-800">Federal Agency & Nonprofit Portal</h1>
-        <p className="text-sm text-slate-400">Vendor directory, supplier-distributor matching, and sample RFQ generation</p>
+      <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center gap-3 mb-1">
+          <span className="bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded">FED</span>
+          <h1 className="text-xl font-bold text-white">Federal Agency & Nonprofit Portal</h1>
+        </div>
+        <p className="text-gray-400 text-sm">Vendor directory, supplier-distributor matching, and sample RFQ generation</p>
       </div>
 
       {/* Tab nav */}
-      <div className="flex items-center gap-1 border-b border-slate-200">
+      <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-xl p-1">
         {[
           { key: 'vendors', label: 'Vendor Directory' },
           { key: 'match', label: 'Match Service' },
           { key: 'rfq', label: 'Sample RFQ' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              tab === t.key ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-400 hover:text-slate-600'
+            className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              tab === t.key ? 'bg-amber-500 text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-gray-800'
             }`}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* ═══ VENDOR DIRECTORY ═══ */}
+      {/* VENDOR DIRECTORY */}
       {tab === 'vendors' && (
         <div className="space-y-4">
-          {/* Filters */}
           <div className="flex items-center gap-3 flex-wrap">
             <select value={vendorFilter.org_type}
               onChange={e => setVendorFilter(p => ({ ...p, org_type: e.target.value }))}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm">
+              className="px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
               <option value="">All Types</option>
               <option value="supplier">Suppliers</option>
               <option value="distributor">Distributors</option>
               <option value="nonprofit">Nonprofits</option>
             </select>
-            <input type="text" placeholder="Search by capability..."
+            <input type="text" placeholder="Search capability..."
               value={vendorFilter.capability}
               onChange={e => setVendorFilter(p => ({ ...p, capability: e.target.value }))}
-              className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm w-48" />
-            <label className="flex items-center gap-1.5 text-sm text-slate-500">
+              className="px-3 py-1.5 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500 w-48" />
+            <label className="flex items-center gap-1.5 text-sm text-gray-400">
               <input type="checkbox" checked={vendorFilter.small_business === 'true'}
                 onChange={e => setVendorFilter(p => ({ ...p, small_business: e.target.checked ? 'true' : '' }))}
                 className="rounded" />
               Small Business Only
             </label>
-            <span className="text-xs text-slate-400">{vendors.length} vendors</span>
+            <span className="text-xs text-amber-400 font-bold">{vendors.length} vendors</span>
           </div>
 
           {vendorLoading ? (
-            <div className="text-center py-8 text-slate-400">Loading vendors...</div>
+            <div className="text-center py-8 text-gray-400">Loading vendors...</div>
           ) : (
             <div className="grid gap-3">
               {vendors.map(v => (
-                <div key={v.id} className="bg-white border border-slate-200 rounded-lg p-5">
+                <div key={v.id} className="bg-gray-900 border border-gray-700 rounded-xl p-5">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-slate-800">{v.name}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-md ${
-                          v.org_type === 'supplier' ? 'bg-blue-50 text-blue-600' :
-                          v.org_type === 'distributor' ? 'bg-purple-50 text-purple-600' :
-                          'bg-green-50 text-green-600'
+                        <h3 className="font-bold text-white text-lg">{v.name}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+                          v.org_type === 'supplier' ? 'bg-blue-600/30 text-blue-300' :
+                          v.org_type === 'distributor' ? 'bg-purple-600/30 text-purple-300' :
+                          'bg-green-600/30 text-green-300'
                         }`}>{v.org_type}</span>
                         {v.small_business && (
-                          <span className="text-xs px-2 py-0.5 bg-amber-50 text-amber-600 rounded-md">Small Business</span>
+                          <span className="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded font-medium">Small Business</span>
                         )}
                       </div>
-                      <p className="text-sm text-slate-400 mt-1">{v.services_description || v.description}</p>
-
-                      {/* Business identifiers */}
+                      <p className="text-sm text-gray-400 mt-1">{v.services_description || v.description}</p>
                       <div className="flex flex-wrap gap-1.5 mt-2">
-                        {v.uei && (
-                          <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-mono">UEI: {v.uei}</span>
-                        )}
+                        {v.uei && <span className="text-xs px-2 py-0.5 bg-gray-800 text-gray-300 rounded font-mono">UEI: {v.uei}</span>}
                         {(v.naics_codes || []).map(n => (
-                          <span key={n} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md">NAICS {n}</span>
+                          <span key={n} className="text-xs px-2 py-0.5 bg-blue-600/20 text-blue-300 rounded font-mono">NAICS {n}</span>
                         ))}
                       </div>
-
-                      {/* Capabilities */}
                       <div className="flex flex-wrap gap-1 mt-2">
                         {(v.capabilities || []).map(c => (
-                          <span key={c} className="text-xs px-2 py-0.5 bg-slate-50 text-slate-500 rounded">{c}</span>
+                          <span key={c} className="text-xs px-2 py-0.5 bg-gray-800 text-gray-400 rounded">{c}</span>
                         ))}
                       </div>
-
-                      {/* Certifications */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {(v.certifications || []).map(c => (
-                          <span key={c} className="text-xs px-2 py-0.5 bg-green-50 text-green-600 rounded">{c}</span>
+                          <span key={c} className="text-xs px-2 py-0.5 bg-green-600/20 text-green-400 rounded">{c}</span>
                         ))}
                       </div>
                     </div>
-                    <div className="text-right text-sm text-slate-400 ml-4 shrink-0">
-                      <p>ZIP {v.zip_code}</p>
+                    <div className="text-right text-sm text-gray-400 ml-4 shrink-0">
+                      <p className="text-white font-bold">ZIP {v.zip_code}</p>
                       <p>{v.service_radius_miles} mi radius</p>
                       {v.employee_count && <p>{v.employee_count} employees</p>}
-                      {v.years_in_business && <p>{v.years_in_business} yrs in business</p>}
-                      {v.annual_revenue && <p>${(v.annual_revenue / 1000000).toFixed(1)}M revenue</p>}
+                      {v.years_in_business && <p>{v.years_in_business} yrs</p>}
+                      {v.annual_revenue && <p className="text-amber-400 font-bold">${(v.annual_revenue / 1000000).toFixed(1)}M</p>}
                       <button onClick={() => setExpandedVendor(expandedVendor === v.id ? null : v.id)}
-                        className="text-xs text-slate-500 hover:text-slate-700 mt-2 underline">
+                        className="text-xs text-amber-400 hover:text-amber-300 mt-2 font-medium">
                         {expandedVendor === v.id ? 'Hide' : 'Past Performance'}
                       </button>
                     </div>
                   </div>
 
-                  {/* Past Performance expanded */}
                   {expandedVendor === v.id && (v.past_performance || []).length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-slate-100">
-                      <h4 className="text-xs font-medium text-slate-500 mb-2">Past Performance</h4>
+                    <div className="mt-4 pt-4 border-t border-gray-800">
+                      <h4 className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Past Performance</h4>
                       <div className="grid gap-2">
                         {v.past_performance.map((pp, j) => (
-                          <div key={j} className="bg-slate-50 rounded-lg p-3">
+                          <div key={j} className="bg-gray-800 rounded-lg p-3">
                             <div className="flex items-start justify-between">
                               <div>
-                                <p className="text-sm font-medium text-slate-700">{pp.contract}</p>
-                                <p className="text-xs text-slate-400">{pp.agency} — {pp.year}</p>
-                                <p className="text-xs text-slate-500 mt-1">{pp.description}</p>
+                                <p className="text-sm font-bold text-white">{pp.contract}</p>
+                                <p className="text-xs text-gray-400">{pp.agency} — {pp.year}</p>
+                                <p className="text-xs text-gray-500 mt-1">{pp.description}</p>
                               </div>
-                              <p className="text-sm font-semibold text-slate-700">${pp.value?.toLocaleString()}</p>
+                              <p className="text-sm font-black text-amber-400">${pp.value?.toLocaleString()}</p>
                             </div>
                           </div>
                         ))}
@@ -213,26 +206,25 @@ export default function FederalPortal() {
         </div>
       )}
 
-      {/* ═══ MATCH SERVICE ═══ */}
+      {/* MATCH SERVICE */}
       {tab === 'match' && (
         <div className="space-y-5">
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-            <p className="text-sm text-slate-500">
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 space-y-4">
+            <p className="text-sm text-gray-400">
               Find the best supplier + distributor combination for your destination.
-              Select categories and we'll match you with the optimal vendor pair.
             </p>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Destination ZIP Code *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Destination ZIP Code *</label>
               <input type="text" value={matchZip} onChange={e => setMatchZip(e.target.value)}
-                className="w-48 px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g. 38614" />
+                className="w-48 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500" placeholder="e.g. 38614" />
             </div>
             <div>
-              <label className="block text-sm text-slate-600 mb-2">Required Capabilities</label>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Required Capabilities</label>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map(cat => (
                   <button key={cat} type="button" onClick={() => toggleCategory(cat)}
-                    className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                      matchCategories.includes(cat) ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'
+                    className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                      matchCategories.includes(cat) ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
                     }`}>
                     {cat}
                   </button>
@@ -240,87 +232,57 @@ export default function FederalPortal() {
               </div>
             </div>
             <button onClick={handleMatch} disabled={matchLoading || !matchZip}
-              className="px-6 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50">
+              className="px-6 py-2 text-sm font-bold bg-amber-500 text-black rounded-lg hover:bg-amber-400 disabled:opacity-50">
               {matchLoading ? 'Finding matches...' : 'Find Supplier + Distributor Matches'}
             </button>
           </div>
 
           {matchResults && (
             <div>
-              <div className="bg-white border border-slate-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-slate-500">
-                  Destination: <span className="font-medium text-slate-700">{matchResults.destination.city}, {matchResults.destination.state}</span>
-                  — Need Score: <span className="font-medium">{matchResults.destination.need_score}</span>
-                  — <span className="font-medium">{matchResults.total_combos_evaluated}</span> combinations evaluated
-                </p>
+              <div className="bg-gray-800 rounded-lg p-3 mb-4 text-sm text-gray-300">
+                Destination: <span className="font-bold text-white">{matchResults.destination.city}, {matchResults.destination.state}</span>
+                — Need: <span className="font-bold text-amber-400">{matchResults.destination.need_score}</span>
+                — <span className="font-bold text-white">{matchResults.total_combos_evaluated}</span> combos evaluated
               </div>
-
               <div className="grid gap-4">
                 {matchResults.matches.map((combo, i) => (
-                  <div key={i} className={`bg-white border rounded-lg p-5 ${i === 0 ? 'border-green-200 ring-1 ring-green-100' : 'border-slate-200'}`}>
-                    {i === 0 && <p className="text-xs text-green-600 font-medium mb-2">BEST MATCH</p>}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Supplier */}
-                      <div className="bg-blue-50/50 rounded-lg p-3">
-                        <p className="text-xs text-blue-500 font-medium">SUPPLIER</p>
-                        <p className="font-medium text-slate-800">{combo.supplier.name}</p>
-                        <p className="text-xs text-slate-400 mt-1">{combo.supplier.services_description || combo.supplier.description}</p>
+                  <div key={i} className={`bg-gray-900 border rounded-xl p-5 ${i === 0 ? 'border-green-500 ring-1 ring-green-500/30' : 'border-gray-700'}`}>
+                    {i === 0 && <p className="text-xs text-green-400 font-black mb-2">BEST MATCH</p>}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-blue-600/10 rounded-lg p-3 border border-blue-600/30">
+                        <p className="text-xs text-blue-400 font-bold">SUPPLIER</p>
+                        <p className="font-bold text-white">{combo.supplier.name}</p>
+                        <p className="text-xs text-gray-400 mt-1">{combo.supplier.services_description || combo.supplier.description}</p>
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {combo.supplier.uei && <span className="text-xs px-1.5 py-0.5 bg-white text-slate-500 rounded font-mono">UEI: {combo.supplier.uei}</span>}
+                          {combo.supplier.uei && <span className="text-xs px-1.5 py-0.5 bg-gray-800 text-gray-300 rounded font-mono">UEI: {combo.supplier.uei}</span>}
                           {(combo.supplier.naics_codes || []).map(n => (
-                            <span key={n} className="text-xs px-1.5 py-0.5 bg-white text-blue-500 rounded">NAICS {n}</span>
+                            <span key={n} className="text-xs px-1.5 py-0.5 bg-gray-800 text-blue-300 rounded font-mono">NAICS {n}</span>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-400 mt-2">{combo.supplier_distance} mi — {combo.supplier_capability_match}% capability match</p>
-                        {(combo.supplier.past_performance || []).length > 0 && (
-                          <div className="mt-2 text-xs text-slate-500">
-                            <p className="font-medium">Recent: {combo.supplier.past_performance[0].contract}</p>
-                            <p>${combo.supplier.past_performance[0].value?.toLocaleString()} — {combo.supplier.past_performance[0].agency}</p>
-                          </div>
-                        )}
+                        <p className="text-xs text-gray-500 mt-2">{combo.supplier_distance} mi — {combo.supplier_capability_match}% cap</p>
                       </div>
-                      {/* Distributor */}
-                      <div className="bg-purple-50/50 rounded-lg p-3">
-                        <p className="text-xs text-purple-500 font-medium">DISTRIBUTOR</p>
-                        <p className="font-medium text-slate-800">{combo.distributor.name}</p>
-                        <p className="text-xs text-slate-400 mt-1">{combo.distributor.services_description || combo.distributor.description}</p>
+                      <div className="bg-purple-600/10 rounded-lg p-3 border border-purple-600/30">
+                        <p className="text-xs text-purple-400 font-bold">DISTRIBUTOR</p>
+                        <p className="font-bold text-white">{combo.distributor.name}</p>
+                        <p className="text-xs text-gray-400 mt-1">{combo.distributor.services_description || combo.distributor.description}</p>
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {combo.distributor.uei && <span className="text-xs px-1.5 py-0.5 bg-white text-slate-500 rounded font-mono">UEI: {combo.distributor.uei}</span>}
+                          {combo.distributor.uei && <span className="text-xs px-1.5 py-0.5 bg-gray-800 text-gray-300 rounded font-mono">UEI: {combo.distributor.uei}</span>}
                           {(combo.distributor.naics_codes || []).map(n => (
-                            <span key={n} className="text-xs px-1.5 py-0.5 bg-white text-purple-500 rounded">NAICS {n}</span>
+                            <span key={n} className="text-xs px-1.5 py-0.5 bg-gray-800 text-purple-300 rounded font-mono">NAICS {n}</span>
                           ))}
                         </div>
-                        <p className="text-xs text-slate-400 mt-2">{combo.distributor_distance} mi — {combo.distributor_capability_match}% capability match</p>
-                        {(combo.distributor.past_performance || []).length > 0 && (
-                          <div className="mt-2 text-xs text-slate-500">
-                            <p className="font-medium">Recent: {combo.distributor.past_performance[0].contract}</p>
-                            <p>${combo.distributor.past_performance[0].value?.toLocaleString()} — {combo.distributor.past_performance[0].agency}</p>
-                          </div>
-                        )}
+                        <p className="text-xs text-gray-500 mt-2">{combo.distributor_distance} mi — {combo.distributor_capability_match}% cap</p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-5 gap-3 mt-3 text-sm border-t border-slate-100 pt-3">
-                      <div>
-                        <span className="text-xs text-slate-400">Combo Score</span>
-                        <p className="font-semibold">{combo.combo_score}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-400">S→D Distance</span>
-                        <p className="font-medium">{combo.supplier_to_distributor_distance} mi</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-400">Est. Transport</span>
-                        <p className="font-medium">${combo.estimated_transport_cost.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-400">Past Perf.</span>
-                        <p className="font-medium">{combo.past_performance_score}%</p>
-                      </div>
-                      <div>
-                        <span className="text-xs text-slate-400">Certifications</span>
+                    <div className="grid grid-cols-5 gap-3 mt-3 bg-gray-800 rounded-lg p-2 text-xs">
+                      <div><span className="text-gray-500">Score</span><p className="font-black text-amber-400">{combo.combo_score}</p></div>
+                      <div><span className="text-gray-500">S→D Dist</span><p className="font-bold text-white">{combo.supplier_to_distributor_distance} mi</p></div>
+                      <div><span className="text-gray-500">Transport</span><p className="font-bold text-white">${combo.estimated_transport_cost.toLocaleString()}</p></div>
+                      <div><span className="text-gray-500">Past Perf</span><p className="font-bold text-white">{combo.past_performance_score}%</p></div>
+                      <div><span className="text-gray-500">Certs</span>
                         <div className="flex flex-wrap gap-0.5">
                           {combo.combined_certifications.slice(0, 3).map(c => (
-                            <span key={c} className="text-xs px-1 py-0.5 bg-green-50 text-green-600 rounded">{c}</span>
+                            <span key={c} className="text-xs px-1 py-0.5 bg-green-600/20 text-green-400 rounded">{c}</span>
                           ))}
                         </div>
                       </div>
@@ -333,38 +295,35 @@ export default function FederalPortal() {
         </div>
       )}
 
-      {/* ═══ SAMPLE RFQ ═══ */}
+      {/* SAMPLE RFQ */}
       {tab === 'rfq' && (
         <div className="space-y-5">
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-            <p className="text-sm text-slate-500">
-              Generate a sample RFQ with estimated costs based on real supplier and distributor data.
-              Compare vendors to find the best value for your program.
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 space-y-4">
+            <p className="text-sm text-gray-400">
+              Generate a sample RFQ with cost estimates. Each vendor and distributor provides unique quotes based on their stock, distance, and market rates.
             </p>
             <div>
-              <label className="block text-sm text-slate-600 mb-1">Destination ZIP Code *</label>
+              <label className="block text-sm font-medium text-gray-300 mb-1">Destination ZIP Code *</label>
               <input type="text" value={rfqZip} onChange={e => setRfqZip(e.target.value)}
-                className="w-48 px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g. 38614" />
+                className="w-48 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500" placeholder="e.g. 38614" />
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm text-slate-600">Supply Items *</label>
+                <label className="text-sm font-medium text-gray-300">Supply Items *</label>
                 <button onClick={() => setRfqItems([...rfqItems, { supply_type: 'non_perishable', quantity: 500 }])}
-                  className="text-xs text-slate-500 hover:text-slate-700">+ Add Item</button>
+                  className="text-xs text-amber-400 hover:text-amber-300 font-medium">+ Add Item</button>
               </div>
               {rfqItems.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 mb-2">
                   <select value={item.supply_type}
                     onChange={e => { const u = [...rfqItems]; u[i] = { ...u[i], supply_type: e.target.value }; setRfqItems(u) }}
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
                     {SUPPLY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                   <input type="number" value={item.quantity} min={1}
                     onChange={e => { const u = [...rfqItems]; u[i] = { ...u[i], quantity: Number(e.target.value) }; setRfqItems(u) }}
-                    className="w-28 px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                  <span className="text-xs text-slate-400 w-14">
-                    {SUPPLY_OPTIONS.find(o => o.value === item.supply_type)?.unit}
-                  </span>
+                    className="w-28 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white" />
+                  <span className="text-xs text-gray-500 w-14">{SUPPLY_OPTIONS.find(o => o.value === item.supply_type)?.unit}</span>
                   {rfqItems.length > 1 && (
                     <button onClick={() => setRfqItems(rfqItems.filter((_, idx) => idx !== i))}
                       className="text-xs text-red-400">Remove</button>
@@ -373,85 +332,167 @@ export default function FederalPortal() {
               ))}
             </div>
             <button onClick={handleRFQ} disabled={rfqLoading || !rfqZip}
-              className="px-6 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50">
+              className="px-6 py-2 text-sm font-bold bg-amber-500 text-black rounded-lg hover:bg-amber-400 disabled:opacity-50">
               {rfqLoading ? 'Generating...' : 'Generate Sample RFQ'}
             </button>
           </div>
 
           {rfq && (
             <div className="space-y-4">
-              <div className="bg-white border border-slate-200 rounded-lg p-5">
+              {/* RFQ Header */}
+              <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <p className="text-xs text-slate-400">SAMPLE RFQ</p>
-                    <h2 className="text-lg font-semibold text-slate-800">{rfq.title}</h2>
-                    <p className="text-sm text-slate-400">{rfq.rfq_number}</p>
+                    <p className="text-xs text-amber-400 font-bold tracking-wider">SAMPLE REQUEST FOR QUOTE</p>
+                    <h2 className="text-lg font-bold text-white mt-1">{rfq.title}</h2>
+                    <p className="text-sm text-gray-400 font-mono">{rfq.rfq_number}</p>
                   </div>
-                  <div className="text-right text-sm">
-                    <p className="text-slate-400">{rfq.destination.city}, {rfq.destination.state}</p>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-white">{rfq.destination.city}, {rfq.destination.state}</p>
                     {rfq.need_score && (
-                      <span className={`text-xs px-2 py-0.5 rounded-md ${
-                        rfq.need_score >= 75 ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
-                      }`}>Need: {rfq.need_score}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                        rfq.need_score >= 75 ? 'bg-red-600 text-white' : 'bg-amber-500 text-black'
+                      }`}>NEED: {rfq.need_score}</span>
                     )}
                   </div>
                 </div>
+
+                <div className="grid grid-cols-4 gap-4 bg-gray-800 rounded-lg p-3 mb-4">
+                  <div><p className="text-xs text-gray-500">Weight</p><p className="text-sm font-bold text-white">{rfq.total_weight_lbs?.toLocaleString()} lbs</p></div>
+                  <div><p className="text-xs text-gray-500">Refrigeration</p><p className="text-sm font-bold text-white">{rfq.needs_refrigeration ? 'REQUIRED' : 'Standard'}</p></div>
+                  <div><p className="text-xs text-gray-500">Suppliers</p><p className="text-sm font-bold text-white">{rfq.total_suppliers_evaluated}</p></div>
+                  <div><p className="text-xs text-gray-500">Distributors</p><p className="text-sm font-bold text-white">{rfq.total_distributors_evaluated}</p></div>
+                </div>
+
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-100 text-left text-slate-400">
-                      <th className="py-2 font-medium">Item</th>
-                      <th className="py-2 font-medium">Qty</th>
-                      <th className="py-2 font-medium">Unit Cost</th>
-                      <th className="py-2 font-medium text-right">Total</th>
+                    <tr className="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+                      <th className="text-left py-2 px-3">Item</th>
+                      <th className="text-right py-2 px-3">Qty</th>
+                      <th className="text-right py-2 px-3">Unit Cost</th>
+                      <th className="text-right py-2 px-3">Weight</th>
+                      <th className="text-right py-2 px-3">Subtotal</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rfq.line_items.map((li, i) => (
-                      <tr key={i} className="border-b border-slate-50">
-                        <td className="py-2">{li.description}</td>
-                        <td className="py-2">{li.quantity.toLocaleString()} {li.unit}</td>
-                        <td className="py-2">${li.unit_cost.toFixed(2)}</td>
-                        <td className="py-2 text-right font-medium">${li.total_cost.toLocaleString()}</td>
+                      <tr key={i} className="border-b border-gray-800 text-white">
+                        <td className="py-2 px-3">{li.description}</td>
+                        <td className="py-2 px-3 text-right font-mono">{li.quantity.toLocaleString()} {li.unit}</td>
+                        <td className="py-2 px-3 text-right font-mono">{$(li.unit_cost)}</td>
+                        <td className="py-2 px-3 text-right font-mono text-gray-400">{li.weight_lbs.toLocaleString()} lbs</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold">{$k(li.total_cost)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot>
-                    <tr className="border-t border-slate-200">
-                      <td colSpan={3} className="py-2 font-medium">Subtotal</td>
-                      <td className="py-2 text-right font-semibold">${rfq.subtotal.toLocaleString()}</td>
+                    <tr className="bg-gray-800 font-bold text-white">
+                      <td colSpan={4} className="py-2 px-3">BASE SUPPLY COST</td>
+                      <td className="py-2 px-3 text-right font-mono text-amber-400">{$k(rfq.subtotal)}</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
-              {rfq.vendor_quotes.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-medium text-slate-700 mb-3">Vendor Quotes ({rfq.total_vendors_evaluated} evaluated)</h3>
-                  <div className="grid gap-3">
-                    {rfq.vendor_quotes.map((v, i) => (
-                      <div key={i} className={`bg-white border rounded-lg p-4 ${i === 0 ? 'border-green-200' : 'border-slate-200'}`}>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-slate-800">{v.organization.name}</p>
-                              {i === 0 && <span className="text-xs px-2 py-0.5 bg-green-50 text-green-600 rounded-md">Best Value</span>}
-                            </div>
-                            <p className="text-xs text-slate-400">{v.organization.org_type} — {v.distance_miles} mi — {v.estimated_delivery_days} day delivery</p>
-                            <div className="flex gap-1 mt-1">
-                              {v.organization.uei && <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded font-mono">{v.organization.uei}</span>}
-                              {(v.organization.naics_codes || []).slice(0, 2).map(n => (
-                                <span key={n} className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-500 rounded">{n}</span>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-xl font-bold">${v.total_estimate.toLocaleString()}</p>
-                            <p className="text-xs text-slate-400">Supply ${v.supply_cost.toLocaleString()} + Transport ${v.transport_cost.toLocaleString()}</p>
-                          </div>
-                        </div>
+              {/* Quote tabs */}
+              <div className="flex items-center gap-1 bg-gray-900 border border-gray-700 rounded-xl p-1">
+                {[
+                  { key: 'suppliers', label: `Suppliers (${rfq.supplier_quotes?.length || 0})` },
+                  { key: 'distributors', label: `Distributors (${rfq.distributor_quotes?.length || 0})` },
+                  { key: 'combos', label: `Combos (${rfq.combo_rankings?.length || 0})` },
+                ].map(t => (
+                  <button key={t.key} onClick={() => setRfqTab(t.key)}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      rfqTab === t.key ? 'bg-amber-500 text-black font-bold' : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                    }`}>{t.label}</button>
+                ))}
+              </div>
+
+              {rfqTab === 'suppliers' && (rfq.supplier_quotes || []).map((sq, i) => (
+                <div key={i} className={`bg-gray-900 border rounded-xl p-4 ${i === 0 ? 'border-green-500' : 'border-gray-700'}`}>
+                  {i === 0 && <div className="text-xs text-green-400 font-black mb-2">LOWEST SUPPLY COST</div>}
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-bold text-white">{sq.organization.name}</h3>
+                      <div className="flex gap-2 mt-1 text-xs text-gray-400">
+                        {sq.organization.uei && <span className="font-mono bg-gray-800 px-2 py-0.5 rounded">UEI: {sq.organization.uei}</span>}
+                        <span>{sq.distance_miles} mi</span>
+                        <span>{sq.estimated_lead_days}d lead</span>
                       </div>
-                    ))}
+                    </div>
+                    <p className="text-xl font-black text-white">{$k(sq.supply_subtotal)}</p>
                   </div>
+                  <table className="w-full text-xs">
+                    <thead><tr className="bg-gray-800 text-gray-500 uppercase">
+                      <th className="text-left py-1 px-2">Item</th><th className="text-right py-1 px-2">Price</th>
+                      <th className="text-right py-1 px-2">Total</th><th className="text-center py-1 px-2">Stock</th>
+                    </tr></thead>
+                    <tbody>
+                      {sq.item_quotes.map((iq, j) => (
+                        <tr key={j} className="border-b border-gray-800/50">
+                          <td className="py-1 px-2 text-gray-300">{iq.description}</td>
+                          <td className="py-1 px-2 text-right text-white font-mono">{$(iq.unit_price)}</td>
+                          <td className="py-1 px-2 text-right text-white font-mono font-bold">{$k(iq.line_total)}</td>
+                          <td className="py-1 px-2 text-center">{iq.in_stock ? <span className="text-green-400 font-bold">YES</span> : <span className="text-gray-600">NO</span>}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+
+              {rfqTab === 'distributors' && (rfq.distributor_quotes || []).map((dq, i) => (
+                <div key={i} className={`bg-gray-900 border rounded-xl p-4 ${i === 0 ? 'border-green-500' : 'border-gray-700'}`}>
+                  {i === 0 && <div className="text-xs text-green-400 font-black mb-2">LOWEST LOGISTICS</div>}
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-bold text-white">{dq.organization.name}</h3>
+                      <div className="flex gap-2 mt-1 text-xs text-gray-400">
+                        {dq.organization.uei && <span className="font-mono bg-gray-800 px-2 py-0.5 rounded">UEI: {dq.organization.uei}</span>}
+                        <span>{dq.distance_miles} mi</span>
+                        <span>{dq.trucks_needed} {dq.truck_type}</span>
+                        <span>{dq.estimated_transit_days}d transit</span>
+                      </div>
+                    </div>
+                    <p className="text-xl font-black text-white">{$k(dq.total_logistics_cost)}</p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2 bg-gray-800 rounded-lg p-2 text-xs">
+                    <div><span className="text-gray-500">Mileage</span><p className="font-bold text-white">{$(dq.transport_breakdown?.base_mileage)}</p></div>
+                    <div><span className="text-gray-500">Fuel</span><p className="font-bold text-white">{$(dq.transport_breakdown?.fuel_surcharge)}</p></div>
+                    <div><span className="text-gray-500">Handling</span><p className="font-bold text-white">{$(dq.handling_fee)}</p></div>
+                    <div><span className="text-gray-500">$/lb</span><p className="font-bold text-amber-400">{$(dq.cost_per_lb)}</p></div>
+                  </div>
+                </div>
+              ))}
+
+              {rfqTab === 'combos' && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm bg-gray-900 border border-gray-700 rounded-xl overflow-hidden">
+                    <thead>
+                      <tr className="bg-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+                        <th className="text-left py-2 px-3">#</th>
+                        <th className="text-left py-2 px-3">Supplier</th>
+                        <th className="text-right py-2 px-3">Supply</th>
+                        <th className="text-left py-2 px-3">Distributor</th>
+                        <th className="text-right py-2 px-3">Logistics</th>
+                        <th className="text-right py-2 px-3">Total</th>
+                        <th className="text-right py-2 px-3">Days</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(rfq.combo_rankings || []).map((c, i) => (
+                        <tr key={i} className={`border-b border-gray-800 ${i === 0 ? 'bg-green-900/20' : ''}`}>
+                          <td className="py-2 px-3"><span className={`inline-flex items-center justify-center w-6 h-6 rounded text-xs font-black ${i === 0 ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400'}`}>{i+1}</span></td>
+                          <td className="py-2 px-3"><p className="font-medium text-white">{c.supplier.name}</p></td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-white">{$k(c.supplier.supply_cost)}</td>
+                          <td className="py-2 px-3"><p className="font-medium text-white">{c.distributor.name}</p></td>
+                          <td className="py-2 px-3 text-right font-mono font-bold text-white">{$k(c.distributor.logistics_cost)}</td>
+                          <td className="py-2 px-3 text-right font-mono font-black text-amber-400 text-lg">{$k(c.total_cost)}</td>
+                          <td className="py-2 px-3 text-right text-gray-300">{c.total_delivery_days}d</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

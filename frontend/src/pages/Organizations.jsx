@@ -23,29 +23,29 @@ export default function Organizations({ defaultType }) {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold text-slate-800">{typeLabels[defaultType] || 'Organizations'}</h1>
-        <p className="text-sm text-slate-400">{defaultType ? `Showing all ${typeLabels[defaultType].toLowerCase()}` : 'Suppliers, distributors, and nonprofits'}</p>
+      <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
+        <h1 className="text-xl font-bold text-white">{typeLabels[defaultType] || 'Organizations'}</h1>
+        <p className="text-sm text-gray-400">{defaultType ? `Showing all ${typeLabels[defaultType].toLowerCase()}` : 'Suppliers, distributors, and nonprofits'}</p>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400">Loading...</div>
       ) : (
         <div className="grid md:grid-cols-2 gap-3">
           {organizations.map(org => (
-            <div key={org.id} className="bg-white border border-slate-200 rounded-lg p-5">
+            <div key={org.id} className="bg-gray-900 border border-gray-700 rounded-xl p-5">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="font-medium text-slate-800">{org.name}</h3>
-                <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">
+                <h3 className="font-bold text-white">{org.name}</h3>
+                <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400 font-medium">
                   {org.org_type}
                 </span>
               </div>
-              <p className="text-sm text-slate-500 mb-3">{org.description}</p>
+              <p className="text-sm text-gray-400 mb-3">{org.description}</p>
 
               <div className="mb-2">
                 <div className="flex flex-wrap gap-1 mt-1">
                   {(org.capabilities || []).map(cap => (
-                    <span key={cap} className="bg-slate-50 text-slate-500 text-xs px-2 py-0.5 rounded-md">{cap}</span>
+                    <span key={cap} className="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded">{cap}</span>
                   ))}
                 </div>
               </div>
@@ -54,13 +54,13 @@ export default function Organizations({ defaultType }) {
                 <div className="mb-2">
                   <div className="flex flex-wrap gap-1 mt-1">
                     {org.certifications.map(cert => (
-                      <span key={cert} className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-md">{cert}</span>
+                      <span key={cert} className="bg-amber-500/20 text-amber-400 text-xs px-2 py-0.5 rounded">{cert}</span>
                     ))}
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center gap-4 text-xs text-slate-400 mt-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center gap-4 text-xs text-gray-500 mt-3 pt-3 border-t border-gray-800">
                 <span>ZIP: {org.zip_code}</span>
                 <span>Radius: {org.service_radius_miles} mi</span>
                 {org.contact_email && <span>{org.contact_email}</span>}
@@ -68,7 +68,7 @@ export default function Organizations({ defaultType }) {
             </div>
           ))}
           {organizations.length === 0 && (
-            <div className="text-center py-12 text-slate-400 col-span-2">No organizations found</div>
+            <div className="text-center py-12 text-gray-500 col-span-2">No organizations found</div>
           )}
         </div>
       )}

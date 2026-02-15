@@ -7,9 +7,9 @@ import MapView from '../components/MapView'
 
 const riskBadge = (risk) => {
   switch (risk) {
-    case 'critical': return 'bg-red-100 text-red-700'
-    case 'high': return 'bg-orange-100 text-orange-700'
-    default: return 'bg-amber-100 text-amber-700'
+    case 'critical': return 'bg-red-600/20 text-red-400'
+    case 'high': return 'bg-orange-500/20 text-orange-400'
+    default: return 'bg-amber-500/20 text-amber-400'
   }
 }
 
@@ -91,50 +91,51 @@ export default function Dashboard() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64 text-slate-400">Loading...</div>
+    return <div className="flex items-center justify-center h-64 text-gray-400">Loading...</div>
   }
 
   return (
     <div className="space-y-6">
 
       {/* Hero */}
-      <div style={{ background: '#111827' }} className="rounded-xl p-8 text-white">
+      <div className="bg-gray-900 rounded-xl p-8 border border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-2xl font-semibold text-white">Crisis Command Center</h1>
+              <span className="bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded">CMD</span>
+              <h1 className="text-2xl font-bold text-white">Crisis Command Center</h1>
               {forecast && (
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-white/10 text-white/80">
+                <span className="text-xs px-2.5 py-0.5 rounded font-medium bg-amber-500/20 text-amber-400">
                   {forecast.threat_level}
                 </span>
               )}
             </div>
-            <p className="text-slate-300 text-sm max-w-xl">
+            <p className="text-gray-400 text-sm max-w-xl">
               {forecast ? forecast.headline : 'AI-powered food crisis detection and rapid response coordination'}
             </p>
             <div className="flex gap-3 mt-5">
               <button
                 onClick={handleTriage}
                 disabled={triageLoading}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
                 {triageLoading ? 'Running Triage...' : 'Run Triage'}
               </button>
               {user ? (
                 <>
-                  <Link to="/post-contract" className="bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors">
+                  <Link to="/post-contract" className="bg-amber-500 text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-400 transition-colors">
                     Post Contract
                   </Link>
-                  <Link to="/join" className="bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/20 transition-colors">
+                  <Link to="/join" className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
                     Register Organization
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/register" className="bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors">
+                  <Link to="/register" className="bg-amber-500 text-black px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-400 transition-colors">
                     Get Started
                   </Link>
-                  <Link to="/solicitations" className="bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/20 transition-colors">
+                  <Link to="/solicitations" className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
                     View Solicitations
                   </Link>
                 </>
@@ -143,12 +144,12 @@ export default function Dashboard() {
           </div>
           <div className="hidden md:flex flex-col items-end gap-4">
             <div className="text-right">
-              <div className="text-4xl font-bold text-white">{stats?.population_at_risk ? (stats.population_at_risk / 1000000).toFixed(1) + 'M' : stats?.avg_need_score || 0}</div>
-              <div className="text-slate-400 text-xs">{stats?.population_at_risk ? 'People at Risk' : 'Avg Need Score'}</div>
+              <div className="text-4xl font-black text-amber-400">{stats?.population_at_risk ? (stats.population_at_risk / 1000000).toFixed(1) + 'M' : stats?.avg_need_score || 0}</div>
+              <div className="text-gray-500 text-xs">{stats?.population_at_risk ? 'People at Risk' : 'Avg Need Score'}</div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-white">{stats?.critical_zones || zipScores.filter(z => z.need_score >= 80).length}</div>
-              <div className="text-slate-400 text-xs">Critical Zones</div>
+              <div className="text-2xl font-black text-red-400">{stats?.critical_zones || zipScores.filter(z => z.need_score >= 80).length}</div>
+              <div className="text-gray-500 text-xs">Critical Zones</div>
             </div>
           </div>
         </div>
@@ -164,21 +165,21 @@ export default function Dashboard() {
 
       {/* Triage Results */}
       {triageLoading && (
-        <div className="bg-slate-100 rounded-lg p-8 text-center">
-          <p className="text-sm font-medium text-slate-500">Running AI triage across all open solicitations...</p>
-          <p className="text-xs text-slate-400 mt-1">Matching organizations to highest-need zones first</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-8 text-center">
+          <p className="text-sm font-medium text-gray-400">Running AI triage across all open solicitations...</p>
+          <p className="text-xs text-gray-500 mt-1">Matching organizations to highest-need zones first</p>
         </div>
       )}
 
       {triage && triage.action_plan && triage.action_plan.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
               Triage Action Plan — {triage.total_solicitations} solicitations ranked by urgency
             </h2>
             <button
               onClick={() => setTriage(null)}
-              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
             >
               Dismiss
             </button>
@@ -188,50 +189,46 @@ export default function Dashboard() {
               <Link
                 key={item.solicitation.id}
                 to={`/solicitations/${item.solicitation.id}`}
-                className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                className="block bg-gray-900 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
               >
                 <div className="flex items-center gap-4">
-                  {/* Priority rank */}
                   <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0 ${
-                    item.need_score >= 85 ? 'bg-red-500' : item.need_score >= 75 ? 'bg-orange-500' : item.need_score >= 60 ? 'bg-amber-500' : 'bg-slate-400'
+                    item.need_score >= 85 ? 'bg-red-600' : item.need_score >= 75 ? 'bg-orange-500' : item.need_score >= 60 ? 'bg-amber-500' : 'bg-gray-600'
                   }`}>
                     #{item.priority}
                   </div>
 
-                  {/* Solicitation info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-800 truncate">{item.solicitation.title}</p>
-                      <span className="text-xs px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
+                      <p className="text-sm font-bold text-white truncate">{item.solicitation.title}</p>
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-400 shrink-0">
                         {item.solicitation.source_type}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-gray-500">
                       {item.solicitation.agency} · ZIP {item.solicitation.zip_code} · Need: {item.need_score}
                       {item.solicitation.estimated_value ? ` · $${item.solicitation.estimated_value.toLocaleString()}` : ''}
                     </p>
                   </div>
 
-                  {/* Top match */}
                   <div className="text-right shrink-0">
                     {item.top_match ? (
                       <>
-                        <p className="text-sm font-medium text-slate-700">{item.top_match.organization_name}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-sm font-bold text-white">{item.top_match.organization_name}</p>
+                        <p className="text-xs text-gray-500">
                           Score: {item.top_match.score} · {item.top_match.distance_miles} mi
                         </p>
                       </>
                     ) : (
-                      <p className="text-xs text-slate-400">No matches found</p>
+                      <p className="text-xs text-gray-500">No matches found</p>
                     )}
                   </div>
 
-                  {/* Action badge */}
                   <div className="shrink-0">
-                    <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${
-                      item.recommended_action.startsWith('Deploy') ? 'bg-red-100 text-red-700' :
-                      item.recommended_action.startsWith('Contact') ? 'bg-amber-100 text-amber-700' :
-                      'bg-slate-100 text-slate-500'
+                    <span className={`text-xs px-2.5 py-1 rounded font-medium ${
+                      item.recommended_action.startsWith('Deploy') ? 'bg-red-600/20 text-red-400' :
+                      item.recommended_action.startsWith('Contact') ? 'bg-amber-500/20 text-amber-400' :
+                      'bg-gray-800 text-gray-400'
                     }`}>
                       {item.recommended_action.split('—')[0].trim()}
                     </span>
@@ -246,48 +243,48 @@ export default function Dashboard() {
       {/* AI Threat Assessment */}
       {forecast && forecast.predictions && forecast.predictions.length > 0 && (
         <div>
-          <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-3">AI Threat Assessment</h2>
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">AI Threat Assessment</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {forecast.predictions.map((pred, i) => (
-              <div key={i} className="bg-white border border-slate-200 rounded-lg p-4">
+              <div key={i} className="bg-gray-900 border border-gray-700 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${riskBadge(pred.risk)}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded font-bold ${riskBadge(pred.risk)}`}>
                     {pred.risk}
                   </span>
-                  <span className="font-medium text-sm text-slate-800">{pred.region}</span>
+                  <span className="font-bold text-sm text-white">{pred.region}</span>
                 </div>
-                <p className="text-sm text-slate-600">{pred.prediction}</p>
-                <p className="text-xs text-slate-400 mt-2">Action: {pred.recommended_action}</p>
+                <p className="text-sm text-gray-300">{pred.prediction}</p>
+                <p className="text-xs text-gray-500 mt-2">Action: {pred.recommended_action}</p>
               </div>
             ))}
           </div>
           {forecast.immediate_actions && (
-            <div className="mt-3 bg-slate-900 text-white rounded-lg p-4">
-              <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2">Immediate Actions</h3>
+            <div className="mt-3 bg-gray-900 border border-red-600/30 rounded-xl p-4">
+              <h3 className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">Immediate Actions</h3>
               <ul className="space-y-1">
                 {forecast.immediate_actions.map((action, i) => (
-                  <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
-                    <span className="text-slate-500 shrink-0">{i + 1}.</span>
+                  <li key={i} className="text-sm text-gray-300 flex items-start gap-2">
+                    <span className="text-gray-600 shrink-0">{i + 1}.</span>
                     {action}
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-slate-500 mt-3">{forecast.estimated_impact}</p>
+              <p className="text-xs text-gray-500 mt-3">{forecast.estimated_impact}</p>
             </div>
           )}
         </div>
       )}
 
       {forecastLoading && (
-        <div className="bg-slate-100 rounded-lg p-6 text-center">
-          <p className="text-sm text-slate-400">Generating AI forecast...</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 text-center">
+          <p className="text-sm text-gray-400">Generating AI forecast...</p>
         </div>
       )}
 
       {/* Map */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide">Map</h2>
+          <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Map</h2>
           <div className="flex gap-2">
             {[
               { key: 'need', label: 'Need Scores' },
@@ -298,8 +295,8 @@ export default function Dashboard() {
               <button
                 key={f.key}
                 onClick={() => toggleLayer(f.key)}
-                className={`px-3 py-1 rounded-md text-xs transition-colors ${
-                  mapLayers[f.key] ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  mapLayers[f.key] ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'
                 }`}
               >
                 {f.label}
@@ -317,19 +314,19 @@ export default function Dashboard() {
               height="500px"
             />
           </div>
-          <div className="bg-white border border-slate-200 rounded-lg p-4 overflow-y-auto" style={{ maxHeight: '500px' }}>
-            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Highest Need</h3>
+          <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 overflow-y-auto" style={{ maxHeight: '500px' }}>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Highest Need</h3>
             <div className="space-y-1">
               {highestNeedAreas.map(z => (
-                <div key={z.zip_code} className="flex items-center gap-3 p-2 rounded-md hover:bg-slate-50">
-                  <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-medium text-white ${
-                    z.need_score >= 85 ? 'bg-red-500' : z.need_score >= 75 ? 'bg-orange-500' : 'bg-amber-500'
+                <div key={z.zip_code} className="flex items-center gap-3 p-2 rounded-md hover:bg-gray-800">
+                  <div className={`w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold text-white ${
+                    z.need_score >= 85 ? 'bg-red-600' : z.need_score >= 75 ? 'bg-orange-500' : 'bg-amber-500'
                   }`}>
                     {z.need_score}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-700 truncate">{z.city}, {z.state}</p>
-                    <p className="text-xs text-slate-400">{z.zip_code}</p>
+                    <p className="text-sm text-white truncate">{z.city}, {z.state}</p>
+                    <p className="text-xs text-gray-500">{z.zip_code}</p>
                   </div>
                 </div>
               ))}
@@ -340,29 +337,29 @@ export default function Dashboard() {
 
       {/* Operations & Match Quality */}
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-white border border-slate-200 rounded-lg p-5">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Source Breakdown</h3>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Source Breakdown</h3>
           <div className="space-y-3">
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-slate-600">Government</span>
-                <span className="text-slate-400">{stats?.government_count || 0}</span>
+                <span className="text-gray-300">Government</span>
+                <span className="text-gray-500">{stats?.government_count || 0}</span>
               </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-slate-400 rounded-full"
+                  className="h-full bg-blue-500 rounded-full"
                   style={{ width: `${stats?.total_solicitations ? (stats.government_count / stats.total_solicitations * 100) : 0}%` }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-slate-600">Commercial</span>
-                <span className="text-slate-400">{stats?.commercial_count || 0}</span>
+                <span className="text-gray-300">Commercial</span>
+                <span className="text-gray-500">{stats?.commercial_count || 0}</span>
               </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-slate-600 rounded-full"
+                  className="h-full bg-purple-500 rounded-full"
                   style={{ width: `${stats?.total_solicitations ? (stats.commercial_count / stats.total_solicitations * 100) : 0}%` }}
                 />
               </div>
@@ -370,29 +367,29 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-lg p-5">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Match Quality</h3>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Match Quality</h3>
           <div className="flex items-center gap-8">
             <div>
-              <div className="text-3xl font-bold text-slate-800">{stats?.avg_match_score || 0}</div>
-              <div className="text-xs text-slate-400">Avg Score</div>
+              <div className="text-3xl font-black text-amber-400">{stats?.avg_match_score || 0}</div>
+              <div className="text-xs text-gray-500">Avg Score</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-800">{stats?.high_confidence_matches || 0}</div>
-              <div className="text-xs text-slate-400">High Confidence</div>
+              <div className="text-3xl font-black text-white">{stats?.high_confidence_matches || 0}</div>
+              <div className="text-xs text-gray-500">High Confidence</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-slate-800">{stats?.total_matches || 0}</div>
-              <div className="text-xs text-slate-400">Total</div>
+              <div className="text-3xl font-black text-white">{stats?.total_matches || 0}</div>
+              <div className="text-xs text-gray-500">Total</div>
             </div>
           </div>
           {stats?.total_matches > 0 && (
             <div className="mt-3">
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden flex">
-                <div className="h-full bg-slate-700" style={{ width: `${(stats.high_confidence_matches / stats.total_matches) * 100}%` }} />
-                <div className="h-full bg-slate-300" style={{ width: `${100 - (stats.high_confidence_matches / stats.total_matches) * 100}%` }} />
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden flex">
+                <div className="h-full bg-amber-500" style={{ width: `${(stats.high_confidence_matches / stats.total_matches) * 100}%` }} />
+                <div className="h-full bg-gray-700" style={{ width: `${100 - (stats.high_confidence_matches / stats.total_matches) * 100}%` }} />
               </div>
-              <p className="text-xs text-slate-400 mt-1">{Math.round((stats.high_confidence_matches / stats.total_matches) * 100)}% high confidence</p>
+              <p className="text-xs text-gray-500 mt-1">{Math.round((stats.high_confidence_matches / stats.total_matches) * 100)}% high confidence</p>
             </div>
           )}
         </div>
@@ -402,68 +399,68 @@ export default function Dashboard() {
       <div className="grid md:grid-cols-3 gap-4">
 
         {/* Recent */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Recent Solicitations</h3>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Recent Solicitations</h3>
           <div className="space-y-2">
             {recentSolicitations.map(sol => (
               <Link
                 key={sol.id}
                 to={`/solicitations/${sol.id}`}
-                className="block p-2 rounded-md hover:bg-slate-50 transition-colors"
+                className="block p-2 rounded-md hover:bg-gray-800 transition-colors"
               >
-                <p className="text-sm text-slate-700 truncate">{sol.title}</p>
-                <p className="text-xs text-slate-400 truncate">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
+                <p className="text-sm text-white truncate">{sol.title}</p>
+                <p className="text-xs text-gray-500 truncate">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
               </Link>
             ))}
             {recentSolicitations.length === 0 && (
-              <p className="text-sm text-slate-400">No solicitations yet.</p>
+              <p className="text-sm text-gray-500">No solicitations yet.</p>
             )}
           </div>
         </div>
 
         {/* Categories */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Categories</h3>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Categories</h3>
           <div className="space-y-2">
             {categoryBreakdown.map(([cat, count]) => (
               <div key={cat}>
                 <div className="flex items-center justify-between text-sm mb-0.5">
-                  <span className="text-slate-600 truncate">{cat}</span>
-                  <span className="text-slate-400 text-xs ml-2 shrink-0">{count}</span>
+                  <span className="text-gray-300 truncate">{cat}</span>
+                  <span className="text-gray-500 text-xs ml-2 shrink-0">{count}</span>
                 </div>
-                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-slate-400 rounded-full"
+                    className="h-full bg-amber-500 rounded-full"
                     style={{ width: `${(count / maxCatCount) * 100}%` }}
                   />
                 </div>
               </div>
             ))}
             {categoryBreakdown.length === 0 && (
-              <p className="text-sm text-slate-400">No categories yet.</p>
+              <p className="text-sm text-gray-500">No categories yet.</p>
             )}
           </div>
         </div>
 
         {/* Coverage Gaps */}
-        <div className="bg-white border border-slate-200 rounded-lg p-5">
-          <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Coverage Gaps</h3>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-5">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Coverage Gaps</h3>
           {coverageGaps.length > 0 ? (
             <div className="space-y-2">
               {coverageGaps.map(z => (
-                <div key={z.zip_code} className="flex items-center gap-2 p-2 bg-slate-50 rounded-md">
-                  <div className="w-6 h-6 rounded-md bg-red-500 text-white flex items-center justify-center text-xs font-medium">
+                <div key={z.zip_code} className="flex items-center gap-2 p-2 bg-gray-800 rounded-md">
+                  <div className="w-6 h-6 rounded-md bg-red-600 text-white flex items-center justify-center text-xs font-bold">
                     {z.need_score}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-700 truncate">{z.city}, {z.state}</p>
-                    <p className="text-xs text-slate-400">{z.zip_code} · {(z.food_insecurity_rate * 100).toFixed(0)}% insecure</p>
+                    <p className="text-sm text-white truncate">{z.city}, {z.state}</p>
+                    <p className="text-xs text-gray-500">{z.zip_code} · {(z.food_insecurity_rate * 100).toFixed(0)}% insecure</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-400">All critical areas covered.</p>
+            <p className="text-sm text-gray-500">All critical areas covered.</p>
           )}
         </div>
       </div>

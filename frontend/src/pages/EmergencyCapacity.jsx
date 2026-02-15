@@ -103,65 +103,70 @@ export default function EmergencyCapacity() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-800">Emergency Capacity Registry</h1>
-          <p className="text-sm text-slate-400">Pre-register supply capacity before disasters strike</p>
+      <div className="bg-gray-900 rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <span className="bg-red-600 text-white text-xs font-black px-2 py-0.5 rounded">EMRG</span>
+              <h1 className="text-xl font-bold text-white">Emergency Capacity Registry</h1>
+            </div>
+            <p className="text-sm text-gray-400">Pre-register supply capacity before disasters strike</p>
+          </div>
+          {user && (
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="px-4 py-2 text-sm font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              {showForm ? 'Cancel' : '+ Register Capacity'}
+            </button>
+          )}
         </div>
-        {user && (
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-          >
-            {showForm ? 'Cancel' : '+ Register Capacity'}
-          </button>
-        )}
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <p className="text-xs text-slate-400">Total Registrations</p>
-          <p className="text-2xl font-semibold text-slate-800">{capacities.length}</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <p className="text-xs text-gray-400">Total Registrations</p>
+          <p className="text-2xl font-bold text-white">{capacities.length}</p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <p className="text-xs text-slate-400">Supply Types</p>
-          <p className="text-2xl font-semibold text-slate-800">{Object.keys(byType).length}</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <p className="text-xs text-gray-400">Supply Types</p>
+          <p className="text-2xl font-bold text-white">{Object.keys(byType).length}</p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <p className="text-xs text-slate-400">Total Quantity</p>
-          <p className="text-2xl font-semibold text-slate-800">{capacities.reduce((s, c) => s + c.quantity, 0).toLocaleString()}</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <p className="text-xs text-gray-400">Total Quantity</p>
+          <p className="text-2xl font-bold text-white">{capacities.reduce((s, c) => s + c.quantity, 0).toLocaleString()}</p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <p className="text-xs text-slate-400">Est. Value</p>
-          <p className="text-2xl font-semibold text-slate-800">${capacities.reduce((s, c) => s + c.quantity * c.unit_cost, 0).toLocaleString()}</p>
+        <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+          <p className="text-xs text-gray-400">Est. Value</p>
+          <p className="text-2xl font-bold text-amber-400">${capacities.reduce((s, c) => s + c.quantity * c.unit_cost, 0).toLocaleString()}</p>
         </div>
       </div>
 
       {/* Registration form */}
       {showForm && user && (
-        <div className="bg-white border border-slate-200 rounded-lg p-6">
-          <h2 className="text-lg font-medium text-slate-800 mb-4">Register Emergency Capacity</h2>
-          {error && <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>}
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-6">
+          <h2 className="text-lg font-bold text-white mb-4">Register Emergency Capacity</h2>
+          {error && <div className="bg-red-600/20 text-red-400 text-sm px-4 py-3 rounded-lg mb-4">{error}</div>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Organization *</label>
+                <label className="block text-sm text-gray-300 mb-1">Organization *</label>
                 <select
                   required value={form.organization_id}
                   onChange={e => update('organization_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white"
                 >
                   <option value="">Select organization...</option>
                   {orgs.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Supply Type *</label>
+                <label className="block text-sm text-gray-300 mb-1">Supply Type *</label>
                 <select
                   required value={form.supply_type}
                   onChange={e => update('supply_type', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white"
                 >
                   {SUPPLY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
@@ -169,58 +174,58 @@ export default function EmergencyCapacity() {
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Item Name *</label>
+                <label className="block text-sm text-gray-300 mb-1">Item Name *</label>
                 <input
                   type="text" required value={form.item_name}
                   onChange={e => update('item_name', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500"
                   placeholder="e.g. Bottled Water 16oz"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Quantity *</label>
+                <label className="block text-sm text-gray-300 mb-1">Quantity *</label>
                 <input
                   type="number" required value={form.quantity} min={1}
                   onChange={e => update('quantity', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Unit</label>
+                <label className="block text-sm text-gray-300 mb-1">Unit</label>
                 <select value={form.unit} onChange={e => update('unit', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white">
                   {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-4 gap-4">
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Unit Cost ($)</label>
+                <label className="block text-sm text-gray-300 mb-1">Unit Cost ($)</label>
                 <input type="number" step="0.01" value={form.unit_cost}
                   onChange={e => update('unit_cost', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white" />
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">ZIP Code *</label>
+                <label className="block text-sm text-gray-300 mb-1">ZIP Code *</label>
                 <input type="text" required value={form.zip_code} maxLength={10}
                   onChange={e => update('zip_code', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white" />
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Available Date</label>
+                <label className="block text-sm text-gray-300 mb-1">Available Date</label>
                 <input type="date" value={form.available_date}
                   onChange={e => update('available_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white" />
               </div>
               <div>
-                <label className="block text-sm text-slate-600 mb-1">Expiry Date</label>
+                <label className="block text-sm text-gray-300 mb-1">Expiry Date</label>
                 <input type="date" value={form.expiry_date}
                   onChange={e => update('expiry_date', e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-sm text-white" />
               </div>
             </div>
             <button type="submit" disabled={submitting}
-              className="px-6 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50">
+              className="px-6 py-2 text-sm font-bold bg-amber-500 text-black rounded-lg hover:bg-amber-400 disabled:opacity-50">
               {submitting ? 'Registering...' : 'Register Capacity'}
             </button>
           </form>
@@ -228,21 +233,21 @@ export default function EmergencyCapacity() {
       )}
 
       {!user && (
-        <div className="bg-white border border-slate-200 rounded-lg p-8 text-center">
-          <p className="text-slate-400 mb-3">Log in to register emergency capacity for your organization.</p>
-          <Link to="/login" className="text-sm font-medium text-slate-700 hover:text-slate-900">Login</Link>
+        <div className="bg-gray-900 border border-gray-700 rounded-xl p-8 text-center">
+          <p className="text-gray-400 mb-3">Log in to register emergency capacity for your organization.</p>
+          <Link to="/login" className="text-sm font-bold text-amber-400 hover:text-amber-300">Login to Register</Link>
         </div>
       )}
 
       {/* Filter pills */}
       <div className="flex items-center gap-2 flex-wrap">
         <button onClick={() => setFilter('')}
-          className={`px-3 py-1 rounded-full text-sm ${!filter ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+          className={`px-3 py-1 rounded-full text-sm font-medium ${!filter ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
           All
         </button>
         {SUPPLY_TYPES.map(t => (
           <button key={t.value} onClick={() => setFilter(t.value)}
-            className={`px-3 py-1 rounded-full text-sm ${filter === t.value ? 'bg-slate-900 text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
+            className={`px-3 py-1 rounded-full text-sm font-medium ${filter === t.value ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-400 border border-gray-700 hover:text-white'}`}>
             {t.label}
           </button>
         ))}
@@ -250,29 +255,29 @@ export default function EmergencyCapacity() {
 
       {/* Capacity list */}
       {loading ? (
-        <div className="text-center py-12 text-slate-400">Loading...</div>
+        <div className="text-center py-12 text-gray-400">Loading...</div>
       ) : capacities.length === 0 ? (
-        <div className="text-center py-12 bg-white border border-slate-200 rounded-lg text-slate-400">
+        <div className="text-center py-12 bg-gray-900 border border-gray-700 rounded-xl text-gray-500">
           No emergency capacity registered yet. Be the first to pre-register supplies.
         </div>
       ) : (
         <div className="grid gap-3">
           {capacities.map(cap => (
-            <div key={cap.id} className="bg-white border border-slate-200 rounded-lg p-4">
+            <div key={cap.id} className="bg-gray-900 border border-gray-700 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-slate-800">{cap.item_name}</h3>
-                    <span className="text-xs px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">
+                    <h3 className="font-bold text-white">{cap.item_name}</h3>
+                    <span className="text-xs px-2 py-0.5 rounded-md bg-gray-800 text-gray-400">
                       {SUPPLY_TYPES.find(t => t.value === cap.supply_type)?.label || cap.supply_type}
                     </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-md ${cap.status === 'available' ? 'bg-green-50 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-md ${cap.status === 'available' ? 'bg-green-600/20 text-green-400' : 'bg-gray-800 text-gray-500'}`}>
                       {cap.status}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-400 mt-1">{cap.organization?.name || 'Unknown Org'} — ZIP {cap.zip_code}</p>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
-                    <span>{cap.quantity.toLocaleString()} {cap.unit}</span>
+                  <p className="text-sm text-gray-400 mt-1">{cap.organization?.name || 'Unknown Org'} — ZIP {cap.zip_code}</p>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                    <span className="text-white font-medium">{cap.quantity.toLocaleString()} {cap.unit}</span>
                     {cap.unit_cost > 0 && <span>${cap.unit_cost}/{cap.unit}</span>}
                     <span>{cap.service_radius_miles} mi radius</span>
                     {cap.expiry_date && <span>Expires: {cap.expiry_date}</span>}
@@ -280,7 +285,7 @@ export default function EmergencyCapacity() {
                 </div>
                 {user && (user.is_admin || user.id === cap.user_id) && (
                   <button onClick={() => handleDelete(cap.id)}
-                    className="text-xs text-red-400 hover:text-red-600">Remove</button>
+                    className="text-xs text-red-400 hover:text-red-300">Remove</button>
                 )}
               </div>
             </div>

@@ -8,14 +8,14 @@ export default function ScoreBar({ score, label }) {
 
   return (
     <div className="flex items-center gap-3">
-      {label && <span className="text-xs text-slate-500 w-20 shrink-0">{label}</span>}
-      <div className="flex-1 bg-slate-200 rounded-full h-2.5">
+      {label && <span className="text-xs text-gray-400 w-20 shrink-0">{label}</span>}
+      <div className="flex-1 bg-gray-700 rounded-full h-2.5">
         <div
           className={`h-2.5 rounded-full transition-all ${getColor(score)}`}
           style={{ width: `${Math.min(100, Math.max(0, score))}%` }}
         />
       </div>
-      <span className="text-sm font-semibold text-slate-700 w-10 text-right">{Math.round(score)}</span>
+      <span className="text-sm font-semibold text-white w-10 text-right">{Math.round(score)}</span>
     </div>
   )
 }
