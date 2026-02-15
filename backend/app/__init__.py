@@ -32,5 +32,32 @@ def create_app():
     with app.app_context():
         from app.models import solicitation, organization, zip_need_score, match_result, user
         db.create_all()
+        _run_migrations(app)
 
     return app
+
+
+def _run_migrations(app):
+    """Add columns that db.create_all() won't add to existing tables."""
+    from sqlalchemy import text, inspect
+    engine = db.engine
+    inspector = inspect(engine)
+
+    # Solicitations table migrations
+    sol_cols = {c["name"] for c in inspector.get_columns("solicitations")}
+    migrations = []
+    if "source_type" not in sol_cols:
+        migrations.append("ALTER TABLE solicitations ADD COLUMN source_type VARCHAR(20) DEFAULT 'government'")
+    if "company_name" not in sol_cols:
+        migrations.append("ALTER TABLE solicitations ADD COLUMN company_name VARCHAR(200)")
+    if "company_email" not in sol_cols:
+        migrations.append("ALTER TABLE solicitations ADD COLUMN company_email VARCHAR(200)")
+    if "user_id" not in sol_cols:
+        migrations.append("ALTER TABLE solicitations ADD COLUMN user_id INTEGER REFERENCES users(id)")
+
+    if migrations:
+        with engine.connect() as conn:
+            for sql in migrations:
+                conn.execute(text(sql))
+            conn.commit()
+        app.logger.info(f"Ran {len(migrations)} migration(s)")
