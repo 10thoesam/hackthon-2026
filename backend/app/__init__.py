@@ -55,6 +55,11 @@ def _run_migrations(app):
     if "user_id" not in sol_cols:
         migrations.append("ALTER TABLE solicitations ADD COLUMN user_id INTEGER REFERENCES users(id)")
 
+    # Users table migrations
+    user_cols = {c["name"] for c in inspector.get_columns("users")}
+    if "is_admin" not in user_cols:
+        migrations.append("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+
     if migrations:
         with engine.connect() as conn:
             for sql in migrations:

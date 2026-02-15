@@ -1,7 +1,10 @@
+import os
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import db
 from app.models.user import User
+
+ADMIN_SECRET = os.getenv("ADMIN_SECRET", "foodmatch-admin-2026")
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -55,3 +58,20 @@ def me():
     if not user:
         return jsonify({"error": "User not found"}), 404
     return jsonify({"user": user.to_dict()})
+
+
+@auth_bp.route("/auth/make-admin", methods=["POST"])
+@jwt_required()
+def make_admin():
+    data = request.get_json()
+    if not data or data.get("secret") != ADMIN_SECRET:
+        return jsonify({"error": "Invalid admin secret"}), 403
+
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    user.is_admin = True
+    db.session.commit()
+    return jsonify({"message": "Admin access granted", "user": user.to_dict()})

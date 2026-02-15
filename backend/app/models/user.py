@@ -11,6 +11,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     name = db.Column(db.String(200), nullable=False)
     organization_id = db.Column(db.Integer, db.ForeignKey("organizations.id"), nullable=True)
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     organization = db.relationship("Organization", backref="users")
@@ -33,4 +34,5 @@ class User(db.Model):
             "email": self.email,
             "name": self.name,
             "organization_id": self.organization_id,
+            "is_admin": self.is_admin or False,
         }

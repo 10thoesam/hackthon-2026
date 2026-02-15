@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from app.models.solicitation import Solicitation
 from app.models.zip_need_score import ZipNeedScore
+from app.models.user import User
 from datetime import date
 
 solicitations_bp = Blueprint("solicitations", __name__)
@@ -104,11 +105,13 @@ def get_solicitation(id):
 def delete_solicitation(id):
     sol = Solicitation.query.get_or_404(id)
     user_id = int(get_jwt_identity())
+    current_user = User.query.get(user_id)
 
-    if sol.source_type == "government":
-        return jsonify({"error": "Government solicitations cannot be deleted"}), 403
-    if sol.user_id != user_id:
-        return jsonify({"error": "You can only delete your own solicitations"}), 403
+    if not current_user.is_admin:
+        if sol.source_type == "government":
+            return jsonify({"error": "Government solicitations cannot be deleted"}), 403
+        if sol.user_id != user_id:
+            return jsonify({"error": "You can only delete your own solicitations"}), 403
 
     for match in sol.matches:
         db.session.delete(match)

@@ -81,7 +81,7 @@ export default function SolicitationDetail() {
             }`}>
               {sol.status}
             </span>
-            {user && sol.user_id === user.id && sol.source_type !== 'government' && (
+            {user && (user.is_admin || (sol.user_id === user.id && sol.source_type !== 'government')) && (
               <button
                 onClick={handleDelete}
                 disabled={deleting}
