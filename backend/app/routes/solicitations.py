@@ -92,3 +92,13 @@ def get_solicitation(id):
         reverse=True,
     )
     return jsonify(data)
+
+
+@solicitations_bp.route("/solicitations/<int:id>", methods=["DELETE"])
+def delete_solicitation(id):
+    sol = Solicitation.query.get_or_404(id)
+    for match in sol.matches:
+        db.session.delete(match)
+    db.session.delete(sol)
+    db.session.commit()
+    return jsonify({"message": "Solicitation deleted"}), 200

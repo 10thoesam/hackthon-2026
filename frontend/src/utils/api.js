@@ -14,5 +14,6 @@ export const fetchDashboardStats = () => api.get('/dashboard/stats')
 export const fetchZipScores = () => api.get('/dashboard/zip-scores')
 export const createOrganization = (data) => api.post('/organizations', data)
 export const createSolicitation = (data) => api.post('/solicitations', data)
+export const deleteSolicitation = (id) => api.delete(`/solicitations/${id}`)
 
 export default api

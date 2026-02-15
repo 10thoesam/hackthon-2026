@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { fetchSolicitation, generateMatches } from '../utils/api'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { fetchSolicitation, generateMatches, deleteSolicitation } from '../utils/api'
 import MapView from '../components/MapView'
 import MatchCard from '../components/MatchCard'
 
 export default function SolicitationDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [sol, setSol] = useState(null)
   const [loading, setLoading] = useState(true)
   const [matching, setMatching] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState(null)
 
   const loadSolicitation = () => {
@@ -27,6 +29,18 @@ export default function SolicitationDetail() {
       .then(() => loadSolicitation())
       .catch(() => setError('Failed to generate matches'))
       .finally(() => setMatching(false))
+  }
+
+  const handleDelete = () => {
+    if (!window.confirm('Are you sure you want to delete this solicitation? This cannot be undone.')) return
+    setDeleting(true)
+    deleteSolicitation(id)
+      .then(() => {
+        const backPath = sol?.source_type === 'commercial' ? '/solicitations/commercial' : '/solicitations/government'
+        navigate(backPath)
+      })
+      .catch(() => setError('Failed to delete solicitation'))
+      .finally(() => setDeleting(false))
   }
 
   if (loading) return <div className="text-center py-12 text-slate-500">Loading...</div>
@@ -59,11 +73,20 @@ export default function SolicitationDetail() {
             </div>
             <p className="text-slate-500 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
           </div>
-          <span className={`text-sm px-3 py-1 rounded-full font-medium ${
-            sol.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
-          }`}>
-            {sol.status}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-sm px-3 py-1 rounded-full font-medium ${
+              sol.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+            }`}>
+              {sol.status}
+            </span>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-sm px-3 py-1 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors"
+            >
+              {deleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
         </div>
 
         <p className="text-slate-600 mt-4">{sol.description}</p>
