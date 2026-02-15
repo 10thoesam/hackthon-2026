@@ -1,0 +1,36 @@
+databases:
+  - name: foodmatch-db
+    plan: free
+
+services:
+  - type: web
+    name: foodmatch-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: foodmatch-db
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.11.11"
+
+  - type: web
+    name: foodmatch-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://foodmatch-api.onrender.com/api/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

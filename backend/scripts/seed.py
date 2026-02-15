@@ -15,6 +15,11 @@ from app.models.match_result import MatchResult
 def seed():
     app = create_app()
     with app.app_context():
+        existing = ZipNeedScore.query.first()
+        if existing:
+            print("Database already seeded. Skipping.")
+            return
+
         print("Clearing existing data...")
         MatchResult.query.delete()
         Solicitation.query.delete()
