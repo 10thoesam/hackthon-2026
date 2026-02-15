@@ -7,7 +7,9 @@ import SolicitationDetail from './pages/SolicitationDetail'
 const navLinks = [
   { to: '/', label: 'Dashboard' },
   { to: '/solicitations', label: 'Solicitations' },
-  { to: '/organizations', label: 'Organizations' },
+  { to: '/organizations/suppliers', label: 'Suppliers' },
+  { to: '/organizations/distributors', label: 'Distributors' },
+  { to: '/organizations/nonprofits', label: 'Nonprofits' },
 ]
 
 export default function App() {
@@ -28,7 +30,7 @@ export default function App() {
                   key={link.to}
                   to={link.to}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname === link.to
+                    (location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to)))
                       ? 'bg-green-50 text-green-700'
                       : 'text-slate-600 hover:bg-slate-100'
                   }`}
@@ -46,7 +48,9 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/solicitations" element={<Solicitations />} />
           <Route path="/solicitations/:id" element={<SolicitationDetail />} />
-          <Route path="/organizations" element={<Organizations />} />
+          <Route path="/organizations/suppliers" element={<Organizations defaultType="supplier" />} />
+          <Route path="/organizations/distributors" element={<Organizations defaultType="distributor" />} />
+          <Route path="/organizations/nonprofits" element={<Organizations defaultType="nonprofit" />} />
         </Routes>
       </main>
     </div>

@@ -1,27 +1,25 @@
 import { useState, useEffect } from 'react'
 import { fetchOrganizations } from '../utils/api'
-import FilterBar from '../components/FilterBar'
 
-const typeFilters = [
-  { value: 'supplier', label: 'Supplier' },
-  { value: 'distributor', label: 'Distributor' },
-  { value: 'nonprofit', label: 'Nonprofit' },
-]
+const typeLabels = {
+  supplier: 'Suppliers',
+  distributor: 'Distributors',
+  nonprofit: 'Nonprofits',
+}
 
-export default function Organizations() {
+export default function Organizations({ defaultType }) {
   const [organizations, setOrganizations] = useState([])
-  const [filters, setFilters] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
     const params = {}
-    if (filters.type) params.type = filters.type
+    if (defaultType) params.type = defaultType
     fetchOrganizations(params)
       .then(res => setOrganizations(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [filters])
+  }, [defaultType])
 
   const typeBadge = {
     supplier: 'bg-blue-100 text-blue-700',
@@ -32,17 +30,9 @@ export default function Organizations() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Organizations</h1>
-        <p className="text-slate-500">Suppliers, distributors, and nonprofits</p>
+        <h1 className="text-2xl font-bold text-slate-800">{typeLabels[defaultType] || 'Organizations'}</h1>
+        <p className="text-slate-500">{defaultType ? `Showing all ${typeLabels[defaultType].toLowerCase()}` : 'Suppliers, distributors, and nonprofits'}</p>
       </div>
-
-      <FilterBar
-        filters={[
-          { key: 'type', label: 'Type', type: 'select', options: typeFilters },
-        ]}
-        values={filters}
-        onChange={setFilters}
-      />
 
       {loading ? (
         <div className="text-center py-12 text-slate-500">Loading...</div>
