@@ -1,37 +1,36 @@
-# FoodMatch MVP
+# FoodMatch
 
-AI-powered matchmaking platform that connects government food distribution solicitations with qualified organizations (suppliers, distributors, and nonprofits).
+AI-powered crisis response platform that matches food distribution needs with qualified organizations during catastrophic emergencies.
 
-## What It Does
+## What problem does this project solve?
 
-FoodMatch helps solve food insecurity by intelligently matching government RFPs/solicitations with the best-fit organizations based on:
+When disasters strike — hurricanes, pandemics, supply chain collapses — 40+ million food-insecure Americans face immediate danger. The bottleneck isn't food supply; it's **coordination**. Government agencies post solicitations, organizations have capabilities, but there's no fast way to match them. FoodMatch uses AI to instantly connect the right organizations to the right needs, prioritizing the highest-risk communities first.
 
-- **Capability overlap** — matching solicitation categories to organization capabilities
-- **Geographic proximity** — prioritizing nearby organizations using haversine distance
-- **Community need** — weighting areas with higher food insecurity scores
-- **AI evaluation** — GPT-4o-mini scores each match considering certifications, set-asides, and contextual fit
+## What libraries and services did we use?
 
-## Tech Stack
+- **OpenAI GPT-4o-mini** — Scores every match with contextual understanding of capabilities, certifications, proximity, and community need. Also powers the AI crisis forecast and threat assessment.
+- **Flask + SQLAlchemy** — Python backend with RESTful API
+- **React 19 + Vite + Tailwind CSS** — Fast, responsive frontend with dark crisis-themed UI
+- **Leaflet.js** — Interactive map visualization of food insecurity zones, solicitations, and organizations
+- **PostgreSQL** (production) / **SQLite** (development) — Database with real US food insecurity data
+- **Render** — Free-tier cloud deployment
 
-**Backend:** Flask, SQLAlchemy, SQLite, OpenAI API
-**Frontend:** React 19, Vite, Tailwind CSS, Leaflet maps, Axios
+## What did we build?
 
-## How Matching Works
+- **AI Match Engine** — 4-component scoring system (capability overlap 30%, proximity 20%, need score 20%, LLM score 30%) that evaluates every organization against every solicitation
+- **Triage Mode** — One-click batch matching across ALL open solicitations, ranked by urgency. The AI processes highest-need zones first and returns deploy/contact/expand recommendations
+- **Crisis Forecast** — GPT-4o-mini analyzes real food insecurity data across monitored zones and generates threat-level assessments with predictions and immediate action items
+- **Crisis Dashboard** — Real-time command center with interactive map, risk alerts, coverage gap detection, and population-at-risk tracking
+- **Role-Based Portals** — Separate views for federal agencies, suppliers, and distributors
+- **Predictive Analytics** — Food insecurity trend forecasting with demand prediction models
+- **Emergency Capacity Tracking** — Monitor and manage emergency food distribution resources
+- **Full Marketplace** — Government and commercial solicitations, organization registration, JWT authentication
 
-1. **Prefilter** — Narrows all organizations to the top 10 candidates by proximity (within 1.5x service radius) and capability overlap
-2. **Score** — Each candidate is scored across 4 components:
-   | Component | Weight |
-   |-----------|--------|
-   | Capability Overlap | 30% |
-   | Proximity | 20% |
-   | Food Insecurity Need Score | 20% |
-   | LLM Score (GPT-4o-mini) | 30% |
-3. **Composite** — `final = 0.3 * capability + 0.2 * proximity + 0.2 * need + 0.3 * llm`
-4. **Results** — Matches are saved and returned sorted by score
+## What would we improve next?
 
-If no OpenAI key is configured, a deterministic fallback formula is used instead.
+Real-time data ingestion from USDA, FEMA, and state-level food insecurity feeds instead of seeded data. Push notifications when a zone crosses a critical threshold. A mobile-first field deployment view for on-the-ground responders. WebSocket-based live updates so the dashboard reflects changes instantly during an active crisis.
 
-## Getting Started
+## Set Up Instructions
 
 ### Backend
 
@@ -65,41 +64,17 @@ npm run dev
 
 Frontend runs on `http://localhost:5173` with API proxy to the backend.
 
-## Seeded Data
+**Note:** The app works without an OpenAI API key — all AI features have deterministic fallbacks.
 
-- **52 ZIP codes** with real US food insecurity metrics (food insecurity rate, SNAP participation, population)
-- **28 government solicitations** across agencies like USDA, state departments, and city programs
-- **18 organizations** — a mix of suppliers, distributors, and nonprofits across the US
+## Screenshots
 
-## Project Structure
+![Dashboard](screenshots/SCR-20260215-mdoq.png)
+![Triage Mode](screenshots/SCR-20260215-mdzp.png)
+![Predictive Intelligence](screenshots/SCR-20260215-mecn.png)
+![Crisis Dashboard](screenshots/SCR-20260215-meea.png)
 
-```
-hackthon-2026/
-  backend/
-    app/
-      models/          # Solicitation, Organization, ZipNeedScore, MatchResult
-      routes/          # API endpoints (solicitations, organizations, matches, dashboard)
-      services/        # Matching algorithm
-      config.py
-    scripts/
-      seed.py          # Database seeding
-    run.py
-  frontend/
-    src/
-      pages/           # Dashboard, Solicitations, SolicitationDetail, Organizations
-      components/      # MatchCard, ScoreBar, MapView, FilterBar, StatsCard
-      utils/api.js     # Axios API client
-```
+## Collaborators
 
-## API Endpoints
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/solicitations` | List solicitations (filter by status, agency, category, zip) |
-| GET | `/api/solicitations/:id` | Solicitation detail with matches |
-| GET | `/api/organizations` | List organizations (filter by type, capability, zip) |
-| GET | `/api/organizations/:id` | Organization detail with matches |
-| POST | `/api/matches/generate` | Generate matches for a solicitation |
-| GET | `/api/matches` | List matches (filter by solicitation_id, organization_id) |
-| GET | `/api/dashboard/stats` | Dashboard statistics |
-| GET | `/api/dashboard/zip-scores` | ZIP code food insecurity data for mapping |
+- [10thoesam](https://github.com/10thoesam)
+- [maremi09](https://github.com/maremi09)
+- [buitano](https://github.com/buitano)
