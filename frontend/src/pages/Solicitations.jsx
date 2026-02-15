@@ -8,7 +8,7 @@ const statusFilters = [
   { value: 'closed', label: 'Closed' },
 ]
 
-export default function Solicitations() {
+export default function Solicitations({ defaultSourceType }) {
   const [solicitations, setSolicitations] = useState([])
   const [filters, setFilters] = useState({})
   const [loading, setLoading] = useState(true)
@@ -18,11 +18,12 @@ export default function Solicitations() {
     const params = {}
     if (filters.status) params.status = filters.status
     if (filters.agency) params.agency = filters.agency
+    if (defaultSourceType) params.source_type = defaultSourceType
     fetchSolicitations(params)
       .then(res => setSolicitations(res.data))
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [filters])
+  }, [filters, defaultSourceType])
 
   const formatCurrency = (val) => {
     if (!val) return 'N/A'
@@ -32,8 +33,12 @@ export default function Solicitations() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Solicitations</h1>
-        <p className="text-slate-500">Government food distribution opportunities</p>
+        <h1 className="text-2xl font-bold text-slate-800">
+          {defaultSourceType === 'commercial' ? 'Commercial Contracts' : defaultSourceType === 'government' ? 'Government Solicitations' : 'Solicitations'}
+        </h1>
+        <p className="text-slate-500">
+          {defaultSourceType === 'commercial' ? 'Private company food distribution opportunities' : 'Government food distribution opportunities'}
+        </p>
       </div>
 
       <FilterBar
@@ -57,8 +62,15 @@ export default function Solicitations() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-800 text-lg">{sol.title}</h3>
-                  <p className="text-sm text-slate-500 mt-1">{sol.agency}</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-800 text-lg">{sol.title}</h3>
+                    {sol.source_type === 'commercial' ? (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Commercial</span>
+                    ) : (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Government</span>
+                    )}
+                  </div>
+                  <p className="text-sm text-slate-500 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
                   <p className="text-sm text-slate-600 mt-2 line-clamp-2">{sol.description}</p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {(sol.categories || []).map(cat => (

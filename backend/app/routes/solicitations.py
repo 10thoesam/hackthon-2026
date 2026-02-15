@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models.solicitation import Solicitation
+from app.models.zip_need_score import ZipNeedScore
+from datetime import date
 
 solicitations_bp = Blueprint("solicitations", __name__)
 
@@ -25,8 +27,59 @@ def list_solicitations():
     if agency:
         query = query.filter(Solicitation.agency.ilike(f"%{agency}%"))
 
+    source_type = request.args.get("source_type")
+    if source_type:
+        query = query.filter_by(source_type=source_type)
+
     solicitations = query.order_by(Solicitation.posted_date.desc()).all()
     return jsonify([s.to_dict() for s in solicitations])
+
+
+@solicitations_bp.route("/solicitations", methods=["POST"])
+def create_solicitation():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Request body is required"}), 400
+
+    required = ["title", "description", "company_name", "company_email", "zip_code"]
+    missing = [f for f in required if not data.get(f)]
+    if missing:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing)}"}), 400
+
+    # Look up lat/lng from zip code
+    zip_entry = ZipNeedScore.query.filter_by(zip_code=data["zip_code"]).first()
+    if zip_entry:
+        lat, lng = zip_entry.lat, zip_entry.lng
+    else:
+        lat = data.get("lat", 0.0)
+        lng = data.get("lng", 0.0)
+
+    # Parse response_deadline if provided
+    response_deadline = None
+    if data.get("response_deadline"):
+        try:
+            response_deadline = date.fromisoformat(data["response_deadline"])
+        except ValueError:
+            return jsonify({"error": "Invalid date format for response_deadline. Use YYYY-MM-DD."}), 400
+
+    sol = Solicitation(
+        title=data["title"],
+        description=data["description"],
+        agency=data.get("company_name", ""),
+        company_name=data["company_name"],
+        company_email=data["company_email"],
+        zip_code=data["zip_code"],
+        lat=lat,
+        lng=lng,
+        categories=data.get("categories", []),
+        estimated_value=data.get("estimated_value"),
+        response_deadline=response_deadline,
+        source_type="commercial",
+        status="open",
+    )
+    db.session.add(sol)
+    db.session.commit()
+    return jsonify(sol.to_dict()), 201
 
 
 @solicitations_bp.route("/solicitations/<int:id>", methods=["GET"])

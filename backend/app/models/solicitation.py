@@ -19,6 +19,9 @@ class Solicitation(db.Model):
     categories = db.Column(db.JSON, default=list)
     estimated_value = db.Column(db.Float)
     status = db.Column(db.String(20), default="open")
+    source_type = db.Column(db.String(20), default="government")
+    company_name = db.Column(db.String(200), nullable=True)
+    company_email = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     matches = db.relationship("MatchResult", backref="solicitation", lazy=True)
@@ -39,4 +42,7 @@ class Solicitation(db.Model):
             "categories": self.categories or [],
             "estimated_value": self.estimated_value,
             "status": self.status,
+            "source_type": self.source_type or "government",
+            "company_name": self.company_name,
+            "company_email": self.company_email,
         }

@@ -39,13 +39,25 @@ export default function SolicitationDetail() {
 
   return (
     <div className="space-y-6">
-      <Link to="/solicitations" className="text-green-700 hover:text-green-800 text-sm">&larr; Back to Solicitations</Link>
+      <Link
+        to={sol?.source_type === 'commercial' ? '/solicitations/commercial' : '/solicitations/government'}
+        className="text-green-700 hover:text-green-800 text-sm"
+      >
+        &larr; Back to {sol?.source_type === 'commercial' ? 'Commercial Contracts' : 'Government Solicitations'}
+      </Link>
 
       <div className="bg-white border border-slate-200 rounded-xl p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">{sol.title}</h1>
-            <p className="text-slate-500 mt-1">{sol.agency}</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-slate-800">{sol.title}</h1>
+              {sol.source_type === 'commercial' ? (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">Commercial</span>
+              ) : (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">Government</span>
+              )}
+            </div>
+            <p className="text-slate-500 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
           </div>
           <span className={`text-sm px-3 py-1 rounded-full font-medium ${
             sol.status === 'open' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'

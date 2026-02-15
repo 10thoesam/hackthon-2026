@@ -3,13 +3,18 @@ import Dashboard from './pages/Dashboard'
 import Solicitations from './pages/Solicitations'
 import Organizations from './pages/Organizations'
 import SolicitationDetail from './pages/SolicitationDetail'
+import JoinForm from './pages/JoinForm'
+import PostContract from './pages/PostContract'
 
 const navLinks = [
   { to: '/', label: 'Dashboard' },
-  { to: '/solicitations', label: 'Solicitations' },
+  { to: '/solicitations/government', label: 'Government' },
+  { to: '/solicitations/commercial', label: 'Commercial' },
   { to: '/organizations/suppliers', label: 'Suppliers' },
   { to: '/organizations/distributors', label: 'Distributors' },
   { to: '/organizations/nonprofits', label: 'Nonprofits' },
+  { to: '/join', label: 'Join' },
+  { to: '/post-contract', label: 'Post Contract' },
 ]
 
 export default function App() {
@@ -47,10 +52,14 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/solicitations" element={<Solicitations />} />
+          <Route path="/solicitations/government" element={<Solicitations defaultSourceType="government" />} />
+          <Route path="/solicitations/commercial" element={<Solicitations defaultSourceType="commercial" />} />
           <Route path="/solicitations/:id" element={<SolicitationDetail />} />
           <Route path="/organizations/suppliers" element={<Organizations defaultType="supplier" />} />
           <Route path="/organizations/distributors" element={<Organizations defaultType="distributor" />} />
           <Route path="/organizations/nonprofits" element={<Organizations defaultType="nonprofit" />} />
+          <Route path="/join" element={<JoinForm />} />
+          <Route path="/post-contract" element={<PostContract />} />
         </Routes>
       </main>
     </div>

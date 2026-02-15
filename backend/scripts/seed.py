@@ -491,6 +491,7 @@ def seed_solicitations():
         },
     ]
     for s in sols:
+        s["source_type"] = "government"
         db.session.add(Solicitation(**s))
 
 
