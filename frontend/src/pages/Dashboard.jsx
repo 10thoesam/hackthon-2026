@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { fetchDashboardStats, fetchZipScores, fetchSolicitations, fetchOrganizations, fetchCrisisForecast } from '../utils/api'
+import { fetchDashboardStats, fetchZipScores, fetchSolicitations, fetchOrganizations, fetchCrisisForecast, runTriage } from '../utils/api'
 import { useAuth } from '../contexts/AuthContext'
 import StatsCard from '../components/StatsCard'
 import MapView from '../components/MapView'
@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [forecastLoading, setForecastLoading] = useState(true)
   const [loading, setLoading] = useState(true)
   const [mapLayers, setMapLayers] = useState({ need: true, solicitations: true, organizations: true, gaps: false })
+  const [triage, setTriage] = useState(null)
+  const [triageLoading, setTriageLoading] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -80,6 +82,14 @@ export default function Dashboard() {
 
   const toggleLayer = (layer) => setMapLayers(prev => ({ ...prev, [layer]: !prev[layer] }))
 
+  const handleTriage = () => {
+    setTriageLoading(true)
+    runTriage()
+      .then(res => setTriage(res.data))
+      .catch(console.error)
+      .finally(() => setTriageLoading(false))
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-slate-400">Loading...</div>
   }
@@ -103,6 +113,13 @@ export default function Dashboard() {
               {forecast ? forecast.headline : 'AI-powered food crisis detection and rapid response coordination'}
             </p>
             <div className="flex gap-3 mt-5">
+              <button
+                onClick={handleTriage}
+                disabled={triageLoading}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {triageLoading ? 'Running Triage...' : 'Run Triage'}
+              </button>
               {user ? (
                 <>
                   <Link to="/post-contract" className="bg-white text-slate-900 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 transition-colors">
@@ -144,6 +161,87 @@ export default function Dashboard() {
         <StatsCard label="AI Matches" value={stats?.total_matches || 0} subtitle={`${stats?.high_confidence_matches || 0} high confidence`} />
         <StatsCard label="People at Risk" value={stats?.population_at_risk ? `${(stats.population_at_risk / 1000).toFixed(0)}K` : '0'} subtitle={`${stats?.critical_zones || 0} critical zones`} />
       </div>
+
+      {/* Triage Results */}
+      {triageLoading && (
+        <div className="bg-slate-100 rounded-lg p-8 text-center">
+          <p className="text-sm font-medium text-slate-500">Running AI triage across all open solicitations...</p>
+          <p className="text-xs text-slate-400 mt-1">Matching organizations to highest-need zones first</p>
+        </div>
+      )}
+
+      {triage && triage.action_plan && triage.action_plan.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+              Triage Action Plan — {triage.total_solicitations} solicitations ranked by urgency
+            </h2>
+            <button
+              onClick={() => setTriage(null)}
+              className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>
+          <div className="space-y-2">
+            {triage.action_plan.map((item) => (
+              <Link
+                key={item.solicitation.id}
+                to={`/solicitations/${item.solicitation.id}`}
+                className="block bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Priority rank */}
+                  <div className={`w-8 h-8 rounded-md flex items-center justify-center text-xs font-bold text-white shrink-0 ${
+                    item.need_score >= 85 ? 'bg-red-500' : item.need_score >= 75 ? 'bg-orange-500' : item.need_score >= 60 ? 'bg-amber-500' : 'bg-slate-400'
+                  }`}>
+                    #{item.priority}
+                  </div>
+
+                  {/* Solicitation info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-slate-800 truncate">{item.solicitation.title}</p>
+                      <span className="text-xs px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 shrink-0">
+                        {item.solicitation.source_type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {item.solicitation.agency} · ZIP {item.solicitation.zip_code} · Need: {item.need_score}
+                      {item.solicitation.estimated_value ? ` · $${item.solicitation.estimated_value.toLocaleString()}` : ''}
+                    </p>
+                  </div>
+
+                  {/* Top match */}
+                  <div className="text-right shrink-0">
+                    {item.top_match ? (
+                      <>
+                        <p className="text-sm font-medium text-slate-700">{item.top_match.organization_name}</p>
+                        <p className="text-xs text-slate-400">
+                          Score: {item.top_match.score} · {item.top_match.distance_miles} mi
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs text-slate-400">No matches found</p>
+                    )}
+                  </div>
+
+                  {/* Action badge */}
+                  <div className="shrink-0">
+                    <span className={`text-xs px-2.5 py-1 rounded-md font-medium ${
+                      item.recommended_action.startsWith('Deploy') ? 'bg-red-100 text-red-700' :
+                      item.recommended_action.startsWith('Contact') ? 'bg-amber-100 text-amber-700' :
+                      'bg-slate-100 text-slate-500'
+                    }`}>
+                      {item.recommended_action.split('—')[0].trim()}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* AI Threat Assessment */}
       {forecast && forecast.predictions && forecast.predictions.length > 0 && (

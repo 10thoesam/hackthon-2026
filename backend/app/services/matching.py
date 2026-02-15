@@ -164,3 +164,60 @@ def generate_matches(solicitation_id):
     db.session.commit()
     results.sort(key=lambda m: m.score, reverse=True)
     return [m.to_dict() for m in results]
+
+
+def run_triage():
+    """Batch-run matching across all open solicitations, prioritized by need score."""
+    # Get all open solicitations with their ZIP need scores
+    solicitations = Solicitation.query.filter_by(status="open").all()
+
+    # Pair each solicitation with its ZIP need score and sort by urgency
+    ranked = []
+    for sol in solicitations:
+        need = get_need_score(sol.zip_code)
+        ranked.append((sol, need))
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    action_plan = []
+    for priority, (sol, need) in enumerate(ranked, 1):
+        # Run existing matching engine for this solicitation
+        matches = generate_matches(sol.id)
+
+        top_match = None
+        recommended_action = "Expand search — no organizations in range"
+        if isinstance(matches, list) and len(matches) > 0:
+            top_match = matches[0]
+            score = top_match.get("score", 0)
+            if score >= 80:
+                recommended_action = "Deploy immediately — high-confidence match"
+            elif score >= 60:
+                recommended_action = "Contact organization — strong potential"
+            else:
+                recommended_action = "Review match — consider expanding criteria"
+
+        action_plan.append({
+            "priority": priority,
+            "solicitation": {
+                "id": sol.id,
+                "title": sol.title,
+                "agency": sol.agency if sol.source_type != "commercial" else sol.company_name,
+                "zip_code": sol.zip_code,
+                "source_type": sol.source_type,
+                "estimated_value": sol.estimated_value,
+            },
+            "need_score": round(need, 1),
+            "total_matches": len(matches) if isinstance(matches, list) else 0,
+            "top_match": {
+                "organization_name": top_match.get("organization", {}).get("name", "Unknown"),
+                "org_type": top_match.get("organization", {}).get("org_type", ""),
+                "score": round(top_match.get("score", 0), 1),
+                "distance_miles": round(top_match.get("distance_miles", 0), 1),
+                "explanation": top_match.get("explanation", ""),
+            } if top_match else None,
+            "recommended_action": recommended_action,
+        })
+
+    return {
+        "total_solicitations": len(action_plan),
+        "action_plan": action_plan,
+    }

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.models.match_result import MatchResult
-from app.services.matching import generate_matches
+from app.services.matching import generate_matches, run_triage
 
 matches_bp = Blueprint("matches", __name__)
 
@@ -33,3 +33,9 @@ def list_matches():
 
     matches = query.order_by(MatchResult.score.desc()).all()
     return jsonify([m.to_dict() for m in matches])
+
+
+@matches_bp.route("/matches/triage", methods=["POST"])
+def trigger_triage():
+    results = run_triage()
+    return jsonify(results)
