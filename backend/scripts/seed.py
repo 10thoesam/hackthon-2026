@@ -733,7 +733,213 @@ def seed_organizations():
             "service_radius_miles": 250,
         },
     ]
-    for o in orgs:
+    # Extended business profile data — NAICS, UEI, services, past performance
+    org_profiles = [
+        {  # 1: Delta Fresh Foods Co-op — supplier
+            "naics_codes": ["311991", "424480", "493110"],
+            "uei": "DFF4K7M2X1R3",
+            "services_description": "Full-service fresh produce aggregation and distribution for food-insecure communities. Operates cold storage facilities, farm-to-table supply chains, and last-mile delivery across the Mississippi Delta.",
+            "past_performance": [
+                {"contract": "USDA Fresh Produce Distribution", "agency": "USDA FNS", "value": 380000, "year": 2024, "description": "Successfully distributed 1.2M lbs of fresh produce to 45 food banks across Mississippi Delta."},
+                {"contract": "Delta Region Farm-to-School", "agency": "MS Dept of Agriculture", "value": 210000, "year": 2023, "description": "Supplied fresh local produce to 32 school districts. 98% on-time delivery rate."},
+            ],
+            "annual_revenue": 4200000, "employee_count": 45, "years_in_business": 12, "small_business": True,
+        },
+        {  # 2: Southern Cold Chain Logistics — distributor
+            "naics_codes": ["493120", "484110", "493110"],
+            "uei": "SCL8N3P5Q2W7",
+            "services_description": "Temperature-controlled logistics and cold chain management across the Southeast US. Fleet of 50+ refrigerated trucks with real-time GPS tracking and temperature monitoring. 100,000+ sq ft warehouse capacity.",
+            "past_performance": [
+                {"contract": "Southeast Regional Cold Chain", "agency": "USDA AMS", "value": 890000, "year": 2024, "description": "Managed cold chain logistics for 8-state region. Zero spoilage incidents over 12-month contract."},
+                {"contract": "GA Emergency Food Distribution", "agency": "FEMA Region 4", "value": 520000, "year": 2023, "description": "Rapid deployment of refrigerated transport during severe weather events. Mobilized within 6 hours."},
+            ],
+            "annual_revenue": 12500000, "employee_count": 120, "years_in_business": 18, "small_business": False,
+        },
+        {  # 3: Mid-South Food Bank Alliance — nonprofit
+            "naics_codes": ["624210", "493110", "624190"],
+            "uei": "MSF6R2T8V4K1",
+            "services_description": "Tri-state food bank network operating 12 distribution centers across TN, MS, and AR. Coordinates emergency food distribution, USDA commodity programs, and mobile food pantry operations.",
+            "past_performance": [
+                {"contract": "TEFAP Distribution", "agency": "USDA FNS", "value": 1200000, "year": 2024, "description": "Distributed 15M lbs of TEFAP commodities to 500,000+ individuals across 3 states."},
+                {"contract": "Delta Flood Response", "agency": "FEMA", "value": 450000, "year": 2023, "description": "Emergency food distribution to 12 counties affected by Mississippi River flooding."},
+            ],
+            "annual_revenue": 8500000, "employee_count": 85, "years_in_business": 22, "small_business": False,
+        },
+        {  # 4: Bayou Provisions LLC — supplier
+            "naics_codes": ["493110", "311991", "424490"],
+            "uei": "BPL3M7W9X5H2",
+            "services_description": "Emergency food supply specialists. Large-scale shelf-stable food staging and rapid deployment for hurricane and disaster preparedness. 50,000 sq ft warehouse with MRE assembly lines.",
+            "past_performance": [
+                {"contract": "Hurricane Season Staging", "agency": "FEMA Region 6", "value": 750000, "year": 2024, "description": "Pre-positioned 200,000 MREs and 500,000 water bottles for hurricane season. Deployed to 3 events."},
+                {"contract": "LA Emergency Food Reserve", "agency": "Louisiana GOHSEP", "value": 420000, "year": 2023, "description": "Maintained state emergency food reserve. 24-hour deployment capability demonstrated."},
+            ],
+            "annual_revenue": 6800000, "employee_count": 55, "years_in_business": 15, "small_business": True,
+        },
+        {  # 5: Heartland Meal Services — supplier
+            "naics_codes": ["722310", "624120", "311991"],
+            "uei": "HMS2K6P4R8N3",
+            "services_description": "Institutional meal preparation and delivery for schools, senior centers, healthcare facilities, and correctional institutions. USDA-compliant kitchen facilities with dietary accommodation expertise.",
+            "past_performance": [
+                {"contract": "IN School Meal Program", "agency": "Indiana DOE", "value": 1100000, "year": 2024, "description": "Prepared and delivered 2.5M meals to 85 schools. 99.2% nutrition compliance rate."},
+                {"contract": "Midwest Senior Meals", "agency": "ACL/AoA", "value": 680000, "year": 2023, "description": "Home-delivered meals to 4,200 homebound seniors across 6 counties."},
+            ],
+            "annual_revenue": 9200000, "employee_count": 110, "years_in_business": 20, "small_business": False,
+        },
+        {  # 6: Community Harvest Network — nonprofit
+            "naics_codes": ["624210", "424480", "562219"],
+            "uei": "CHN5V3J7M1Q4",
+            "services_description": "Food rescue and redistribution network. Recovers surplus food from farms, restaurants, grocers, and manufacturers. 10M+ lbs annually redistributed to food-insecure communities.",
+            "past_performance": [
+                {"contract": "TN Food Rescue Initiative", "agency": "TN Dept of Agriculture", "value": 350000, "year": 2024, "description": "Rescued 4.2M lbs of surplus food from 120 partners. Reduced food waste by 35% in target areas."},
+                {"contract": "SE Farm Gleaning Program", "agency": "USDA AMS", "value": 280000, "year": 2023, "description": "Coordinated gleaning operations across 45 farms, recovering 2.8M lbs of produce."},
+            ],
+            "annual_revenue": 3200000, "employee_count": 38, "years_in_business": 9, "small_business": True,
+        },
+        {  # 7: Great Lakes Cold Storage Inc — distributor
+            "naics_codes": ["493120", "493110", "484110"],
+            "uei": "GLC9T5W2K7R4",
+            "services_description": "Industrial-scale cold storage and frozen food distribution hub serving the Great Lakes region. 100,000 sq ft facility with blast freezing, climate-controlled loading docks, and cross-docking.",
+            "past_performance": [
+                {"contract": "MI Cold Storage Network", "agency": "Michigan DHHS", "value": 620000, "year": 2024, "description": "Stored and distributed 8M lbs of frozen commodity foods for state food bank network."},
+                {"contract": "Great Lakes TEFAP Storage", "agency": "USDA FNS", "value": 480000, "year": 2023, "description": "Cold storage management for TEFAP commodities serving OH, MI, IN."},
+            ],
+            "annual_revenue": 7800000, "employee_count": 65, "years_in_business": 25, "small_business": False,
+        },
+        {  # 8: Nourish Chicago — nonprofit
+            "naics_codes": ["624210", "624190", "722514"],
+            "uei": "NCH4L8M3P6W2",
+            "services_description": "Urban food access nonprofit operating 8 mobile food pantries, 3 community kitchens, and culinary job training programs on Chicago's South and West sides.",
+            "past_performance": [
+                {"contract": "Chicago Food Desert Initiative", "agency": "City of Chicago DFSS", "value": 1500000, "year": 2024, "description": "Operated mobile markets and community kitchens serving 50,000 households monthly."},
+                {"contract": "IL SNAP Outreach", "agency": "Illinois DHS", "value": 320000, "year": 2023, "description": "SNAP enrollment assistance and nutrition education. Enrolled 8,400 new participants."},
+            ],
+            "annual_revenue": 5600000, "employee_count": 72, "years_in_business": 11, "small_business": True,
+        },
+        {  # 9: Pueblo Food Sovereignty — nonprofit
+            "naics_codes": ["624210", "311999", "624190"],
+            "uei": "PFS7N2K5R3J8",
+            "services_description": "Indigenous-led food sovereignty organization. Traditional food preservation, seed saving, community gardens, and FDPIR distribution for Pueblo communities.",
+            "past_performance": [
+                {"contract": "NM Tribal Food Distribution", "agency": "USDA FNS FDPIR", "value": 420000, "year": 2024, "description": "Monthly food package distribution to 3,200 households across 8 Pueblo communities."},
+                {"contract": "Indigenous Food Systems", "agency": "USDA NIFA", "value": 180000, "year": 2023, "description": "Traditional food preservation training and seed bank development for 5 tribal nations."},
+            ],
+            "annual_revenue": 2100000, "employee_count": 28, "years_in_business": 7, "small_business": True,
+        },
+        {  # 10: TechBridge Solutions — supplier
+            "naics_codes": ["541511", "541519", "518210"],
+            "uei": "TBS6H4M8Q2V5",
+            "services_description": "Government food assistance technology platforms. SNAP/WIC/TANF benefit management systems, EBT integration, and real-time eligibility verification for 5 state agencies.",
+            "past_performance": [
+                {"contract": "AL SNAP Technology Platform", "agency": "Alabama DHR", "value": 320000, "year": 2024, "description": "Deployed SNAP benefit management system serving 800,000 recipients. 99.9% uptime."},
+                {"contract": "Multi-State WIC Integration", "agency": "USDA FNS", "value": 540000, "year": 2023, "description": "WIC EBT integration platform deployed in 3 states. Reduced processing time by 60%."},
+            ],
+            "annual_revenue": 3800000, "employee_count": 42, "years_in_business": 8, "small_business": True,
+        },
+        {  # 11: East Coast Fresh Distributors — distributor
+            "naics_codes": ["424480", "484110", "493110"],
+            "uei": "ECF3W7K9R5N1",
+            "services_description": "Full-service produce distribution from Florida to Maine. Direct farm relationships with 200+ growers. Same-day delivery, custom packing, and institutional food service supply.",
+            "past_performance": [
+                {"contract": "Northeast School Produce", "agency": "USDA AMS", "value": 2200000, "year": 2024, "description": "Supplied fresh produce to 400+ schools across 5 states. 97% fill rate on orders."},
+                {"contract": "PA Farm-to-Food Bank", "agency": "PA Dept of Agriculture", "value": 580000, "year": 2023, "description": "Connected 85 local farms to 120 food bank distribution points."},
+            ],
+            "annual_revenue": 18500000, "employee_count": 165, "years_in_business": 30, "small_business": False,
+        },
+        {  # 12: Gulf Coast Emergency Services — distributor
+            "naics_codes": ["493110", "484110", "561210"],
+            "uei": "GCE8P4L2M6W3",
+            "services_description": "Rapid-response emergency logistics for Gulf Coast disaster zones. Pre-positioned staging areas, 24-hour mobilization, and coordination with FEMA/state emergency management.",
+            "past_performance": [
+                {"contract": "Hurricane Season Response", "agency": "FEMA Region 6", "value": 950000, "year": 2024, "description": "Deployed emergency food relief for 3 hurricanes. Served 180,000 meals in 72 hours."},
+                {"contract": "TX Flood Relief Logistics", "agency": "Texas TDEM", "value": 620000, "year": 2023, "description": "Emergency food and water distribution to 15 flood-affected counties."},
+            ],
+            "annual_revenue": 11200000, "employee_count": 95, "years_in_business": 16, "small_business": False,
+        },
+        {  # 13: Baltimore Community Kitchen — nonprofit
+            "naics_codes": ["722514", "611699", "624190"],
+            "uei": "BCK5R3N7T2J4",
+            "services_description": "Shared commercial kitchen incubator supporting 40+ BIPOC food entrepreneurs. Provides kitchen access, culinary training, business development, and community meal programs.",
+            "past_performance": [
+                {"contract": "Baltimore Food Incubator", "agency": "Baltimore Development Corp", "value": 600000, "year": 2024, "description": "Supported 42 food businesses, created 85 jobs, prepared 120,000 community meals."},
+                {"contract": "MD Culinary Training", "agency": "Maryland DLLR", "value": 280000, "year": 2023, "description": "Workforce development culinary training. 92% job placement rate for 120 graduates."},
+            ],
+            "annual_revenue": 2800000, "employee_count": 32, "years_in_business": 6, "small_business": True,
+        },
+        {  # 14: Buckeye Harvest Hub — distributor
+            "naics_codes": ["424480", "493110", "424490"],
+            "uei": "BHH2M6K4V8R1",
+            "services_description": "Regional food hub aggregating from 150+ small farms for institutional and food bank buyers. Operates 40,000 sq ft distribution center with cold storage in Cleveland.",
+            "past_performance": [
+                {"contract": "Ohio Food Hub Network", "agency": "USDA AMS", "value": 450000, "year": 2024, "description": "Aggregated and distributed 3.5M lbs from 150 farms to 200 institutional buyers."},
+                {"contract": "Cleveland Farm-to-Table", "agency": "OH Dept of Agriculture", "value": 275000, "year": 2023, "description": "School and hospital produce supply program connecting local farms to 60 institutions."},
+            ],
+            "annual_revenue": 5200000, "employee_count": 48, "years_in_business": 10, "small_business": True,
+        },
+        {  # 15: Lone Star Food Systems — supplier
+            "naics_codes": ["493120", "311991", "722310"],
+            "uei": "LSF7T3W9K5N2",
+            "services_description": "Large-scale food systems operation with cold storage facilities, shelf-stable food production, and distribution networks serving military installations, schools, and government programs across Texas.",
+            "past_performance": [
+                {"contract": "DoD Food Supply - Fort Hood", "agency": "Defense Logistics Agency", "value": 2800000, "year": 2024, "description": "Full food supply chain for military installation. 8M meals annually. 99.5% compliance."},
+                {"contract": "TX School Nutrition Program", "agency": "Texas Dept of Agriculture", "value": 1100000, "year": 2023, "description": "Meal preparation and distribution for 200 school districts in rural Texas."},
+            ],
+            "annual_revenue": 22000000, "employee_count": 210, "years_in_business": 28, "small_business": False,
+        },
+        {  # 16: Carolina Nutrition Partners — nonprofit
+            "naics_codes": ["624190", "611699", "624210"],
+            "uei": "CNP4J8M2R6W3",
+            "services_description": "Regional nutrition education and food access nonprofit. Farmers market SNAP matching, community cooking classes, and nutrition counseling across North and South Carolina.",
+            "past_performance": [
+                {"contract": "NC SNAP Double Bucks", "agency": "NC DHHS", "value": 240000, "year": 2024, "description": "SNAP incentive program at 45 farmers markets. Generated $1.2M in local farm sales."},
+                {"contract": "SC Nutrition Education", "agency": "USDA SNAP-Ed", "value": 180000, "year": 2023, "description": "Nutrition education reaching 15,000 participants across 8 counties."},
+            ],
+            "annual_revenue": 1800000, "employee_count": 22, "years_in_business": 8, "small_business": True,
+        },
+        {  # 17: Midwest Senior Nutrition — supplier
+            "naics_codes": ["624120", "722310", "311991"],
+            "uei": "MSN5K3P7R2V4",
+            "services_description": "Senior nutrition specialist providing Meals on Wheels, congregate meal programs, and medically tailored meals. Registered dietitian oversight and home delivery fleet.",
+            "past_performance": [
+                {"contract": "WI Meals on Wheels", "agency": "Milwaukee County DoA", "value": 290000, "year": 2024, "description": "Daily meal delivery to 1,500+ homebound seniors. 99.8% delivery completion rate."},
+                {"contract": "Midwest MTM Program", "agency": "CMS Medicaid Waiver", "value": 580000, "year": 2023, "description": "Medically tailored meals for 800 chronically ill patients. 20% reduction in hospital readmissions."},
+            ],
+            "annual_revenue": 4500000, "employee_count": 55, "years_in_business": 14, "small_business": True,
+        },
+        {  # 18: Sooner State Food Co-op — supplier
+            "naics_codes": ["424490", "311999", "624210"],
+            "uei": "SSF8M2N6K4R1",
+            "services_description": "Native American food cooperative specializing in traditional foods, USDA commodity distribution for tribal communities, and culturally appropriate food programs across Oklahoma tribal nations.",
+            "past_performance": [
+                {"contract": "OK FDPIR Distribution", "agency": "USDA FNS", "value": 710000, "year": 2024, "description": "Monthly food package distribution to 8,000+ households across 12 tribal nations."},
+                {"contract": "Tribal Food Sovereignty", "agency": "USDA NIFA", "value": 220000, "year": 2023, "description": "Traditional food production and preservation training for 5 tribal communities."},
+            ],
+            "annual_revenue": 3600000, "employee_count": 40, "years_in_business": 11, "small_business": True,
+        },
+        {  # 19: Sunshine State Logistics — distributor
+            "naics_codes": ["484110", "493110", "492210"],
+            "uei": "SSL6W4P8K3M2",
+            "services_description": "Statewide food logistics with temperature-controlled fleet. Specializes in last-mile delivery to food banks, social service agencies, and emergency distribution points throughout Florida.",
+            "past_performance": [
+                {"contract": "FL Food Bank Logistics", "agency": "Florida DCF", "value": 430000, "year": 2024, "description": "Statewide food bank distribution serving 2M+ individuals. Fleet of 35 refrigerated trucks."},
+                {"contract": "Hurricane Ian Food Relief", "agency": "FEMA Region 4", "value": 380000, "year": 2023, "description": "Emergency food and water distribution to 8 hurricane-affected counties within 12 hours."},
+            ],
+            "annual_revenue": 6200000, "employee_count": 72, "years_in_business": 19, "small_business": False,
+        },
+        {  # 20: Appalachian Food Network — nonprofit
+            "naics_codes": ["624210", "722310", "624190"],
+            "uei": "AFN3R7K5M2W4",
+            "services_description": "Regional food security nonprofit serving Appalachian communities in KY, TN, and VA. Operates mobile markets, summer feeding programs, and community food distribution.",
+            "past_performance": [
+                {"contract": "Appalachian SFSP", "agency": "Kentucky DOE", "value": 410000, "year": 2024, "description": "Summer feeding at 35 sites reaching 8,000 children in rural eastern Kentucky."},
+                {"contract": "Rural Food Access", "agency": "USDA RD", "value": 320000, "year": 2023, "description": "Mobile market program serving 22 rural communities with limited grocery access."},
+            ],
+            "annual_revenue": 2400000, "employee_count": 30, "years_in_business": 13, "small_business": True,
+        },
+    ]
+
+    for i, o in enumerate(orgs):
+        if i < len(org_profiles):
+            o.update(org_profiles[i])
         db.session.add(Organization(**o))
 
 

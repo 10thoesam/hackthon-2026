@@ -12,6 +12,9 @@ import EmergencyCapacity from './pages/EmergencyCapacity'
 import CrisisDashboard from './pages/CrisisDashboard'
 import Predictions from './pages/Predictions'
 import CostEstimator from './pages/CostEstimator'
+import SupplierPortal from './pages/SupplierPortal'
+import DistributorPortal from './pages/DistributorPortal'
+import FederalPortal from './pages/FederalPortal'
 
 const publicNavLinks = [
   { to: '/', label: 'Dashboard' },
@@ -20,7 +23,9 @@ const publicNavLinks = [
   { to: '/crisis', label: 'Crisis' },
   { to: '/emergency', label: 'Emergency' },
   { to: '/rfq', label: 'Cost Estimator' },
-  { to: '/organizations/suppliers', label: 'Suppliers' },
+  { to: '/portal/suppliers', label: 'Suppliers' },
+  { to: '/portal/distributors', label: 'Distributors' },
+  { to: '/portal/federal', label: 'Federal/Nonprofit' },
 ]
 
 const authNavLinks = [
@@ -98,6 +103,9 @@ export default function App() {
           <Route path="/crisis" element={<CrisisDashboard />} />
           <Route path="/emergency" element={<EmergencyCapacity />} />
           <Route path="/rfq" element={<CostEstimator />} />
+          <Route path="/portal/suppliers" element={<SupplierPortal />} />
+          <Route path="/portal/distributors" element={<DistributorPortal />} />
+          <Route path="/portal/federal" element={<FederalPortal />} />
           <Route path="/organizations/suppliers" element={<Organizations defaultType="supplier" />} />
           <Route path="/organizations/distributors" element={<Organizations defaultType="distributor" />} />
           <Route path="/organizations/nonprofits" element={<Organizations defaultType="nonprofit" />} />

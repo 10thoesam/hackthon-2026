@@ -25,6 +25,7 @@ def create_app():
     from app.routes.emergency import emergency_bp
     from app.routes.predictions import predictions_bp
     from app.routes.rfq import rfq_bp
+    from app.routes.portals import portals_bp
 
     app.register_blueprint(solicitations_bp, url_prefix="/api")
     app.register_blueprint(organizations_bp, url_prefix="/api")
@@ -34,6 +35,7 @@ def create_app():
     app.register_blueprint(emergency_bp, url_prefix="/api")
     app.register_blueprint(predictions_bp, url_prefix="/api")
     app.register_blueprint(rfq_bp, url_prefix="/api")
+    app.register_blueprint(portals_bp, url_prefix="/api")
 
     with app.app_context():
         from app.models import solicitation, organization, zip_need_score, match_result, user
@@ -66,6 +68,25 @@ def _run_migrations(app):
     user_cols = {c["name"] for c in inspector.get_columns("users")}
     if "is_admin" not in user_cols:
         migrations.append("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE")
+
+    # Organizations table migrations
+    org_cols = {c["name"] for c in inspector.get_columns("organizations")}
+    if "naics_codes" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN naics_codes JSON")
+    if "uei" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN uei VARCHAR(20)")
+    if "services_description" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN services_description TEXT")
+    if "past_performance" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN past_performance JSON")
+    if "annual_revenue" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN annual_revenue FLOAT")
+    if "employee_count" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN employee_count INTEGER")
+    if "years_in_business" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN years_in_business INTEGER")
+    if "small_business" not in org_cols:
+        migrations.append("ALTER TABLE organizations ADD COLUMN small_business BOOLEAN DEFAULT FALSE")
 
     if migrations:
         with engine.connect() as conn:

@@ -16,6 +16,19 @@ class Organization(db.Model):
     capabilities = db.Column(db.JSON, default=list)
     certifications = db.Column(db.JSON, default=list)
     service_radius_miles = db.Column(db.Float, default=100.0)
+
+    # Business identifiers
+    naics_codes = db.Column(db.JSON, default=list)  # List of NAICS codes
+    uei = db.Column(db.String(20), nullable=True)  # Unique Entity Identifier (SAM.gov)
+
+    # Extended profile
+    services_description = db.Column(db.Text, nullable=True)
+    past_performance = db.Column(db.JSON, default=list)  # [{contract, agency, value, year, description}]
+    annual_revenue = db.Column(db.Float, nullable=True)
+    employee_count = db.Column(db.Integer, nullable=True)
+    years_in_business = db.Column(db.Integer, nullable=True)
+    small_business = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     matches = db.relationship("MatchResult", backref="organization", lazy=True)
@@ -33,4 +46,12 @@ class Organization(db.Model):
             "capabilities": self.capabilities or [],
             "certifications": self.certifications or [],
             "service_radius_miles": self.service_radius_miles,
+            "naics_codes": self.naics_codes or [],
+            "uei": self.uei,
+            "services_description": self.services_description,
+            "past_performance": self.past_performance or [],
+            "annual_revenue": self.annual_revenue,
+            "employee_count": self.employee_count,
+            "years_in_business": self.years_in_business,
+            "small_business": self.small_business,
         }

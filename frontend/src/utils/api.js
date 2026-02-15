@@ -55,4 +55,10 @@ export const fetchWasteReduction = () => api.get('/predictions/waste-reduction')
 export const generateRFQ = (data) => api.post('/rfq/estimate', data)
 export const fetchSupplyCosts = () => api.get('/rfq/supply-costs')
 
+// Portals
+export const fetchSupplierMatches = (orgId) => api.get(`/portal/supplier/${orgId}/matches`)
+export const fetchDistributorMatches = (orgId) => api.get(`/portal/distributor/${orgId}/matches`)
+export const fetchFederalVendors = (params) => api.get('/portal/federal/vendors', { params })
+export const federalTriMatch = (data) => api.post('/portal/federal/match', data)
+
 export default api
