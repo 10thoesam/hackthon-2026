@@ -17,14 +17,20 @@ from app.models.waste_reduction import WasteReduction
 def seed():
     app = create_app()
     with app.app_context():
+        db.create_all()
+
         print("Clearing existing data...")
-        WasteReduction.query.delete()
-        EmergencyCapacity.query.delete()
-        MatchResult.query.delete()
-        Solicitation.query.delete()
-        Organization.query.delete()
-        ZipNeedScore.query.delete()
-        db.session.commit()
+        try:
+            WasteReduction.query.delete()
+            EmergencyCapacity.query.delete()
+            MatchResult.query.delete()
+            Solicitation.query.delete()
+            Organization.query.delete()
+            ZipNeedScore.query.delete()
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Clear failed (fresh DB): {e}")
 
         print("Seeding ZIP need scores...")
         seed_zip_scores()
