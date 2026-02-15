@@ -34,20 +34,24 @@ def seed():
 
         print("Seeding ZIP need scores...")
         seed_zip_scores()
+        db.session.commit()
 
         print("Seeding solicitations...")
         seed_solicitations()
+        db.session.commit()
 
         print("Seeding organizations...")
         seed_organizations()
+        db.session.commit()
 
         print("Seeding emergency capacities...")
         seed_emergency_capacities()
+        db.session.commit()
 
         print("Seeding waste reduction records...")
         seed_waste_reductions()
-
         db.session.commit()
+
         print("Done! Seeded successfully.")
 
 
