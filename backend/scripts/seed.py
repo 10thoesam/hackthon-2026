@@ -19,30 +19,9 @@ def seed():
     with app.app_context():
         db.create_all()
 
-        print("Clearing existing data...")
-        try:
-            # Use TRUNCATE CASCADE on PostgreSQL to reset ID sequences
-            from sqlalchemy import text
-            dialect = db.engine.dialect.name
-            if dialect == "postgresql":
-                tables = [
-                    "waste_reductions", "emergency_capacities", "match_results",
-                    "solicitations", "organizations", "zip_need_scores",
-                ]
-                for t in tables:
-                    db.session.execute(text(f"TRUNCATE TABLE {t} RESTART IDENTITY CASCADE"))
-                db.session.commit()
-            else:
-                WasteReduction.query.delete()
-                EmergencyCapacity.query.delete()
-                MatchResult.query.delete()
-                Solicitation.query.delete()
-                Organization.query.delete()
-                ZipNeedScore.query.delete()
-                db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            print(f"Clear failed (fresh DB): {e}")
+        print("Dropping and recreating all tables (clean slate)...")
+        db.drop_all()
+        db.create_all()
 
         print("Seeding ZIP need scores...")
         seed_zip_scores()
