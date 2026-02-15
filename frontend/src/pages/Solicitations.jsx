@@ -63,8 +63,8 @@ export default function Solicitations() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-slate-800">Solicitations</h1>
-        <p className="text-sm text-slate-400">Food distribution opportunities</p>
+        <h1 className="text-2xl font-bold text-slate-800">Solicitations</h1>
+        <p className="text-slate-500">Browse food distribution opportunities across all sectors</p>
       </div>
 
       {/* Source type pill filters */}
@@ -75,8 +75,8 @@ export default function Solicitations() {
             onClick={() => handleSourceType(st.value)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               sourceType === st.value
-                ? 'bg-slate-900 text-white'
-                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+                ? 'bg-green-600 text-white'
+                : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
             }`}
           >
             {st.label}
@@ -106,12 +106,14 @@ export default function Solicitations() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-slate-800">{sol.title}</h3>
-                    <span className={`text-xs px-2 py-0.5 rounded-md font-medium ${badgeStyles[sol.source_type] || badgeStyles.government}`}>
+                    <h3 className="font-semibold text-slate-800 text-lg">{sol.title}</h3>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgeStyles[sol.source_type] || badgeStyles.government}`}>
                       {badgeLabels[sol.source_type] || sol.source_type}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-400 mt-1">{sol.source_type === 'commercial' ? sol.company_name : sol.agency}</p>
+                  <p className="text-sm text-slate-500 mt-1">
+                    {sol.source_type === 'commercial' ? sol.company_name : sol.agency}
+                  </p>
                   <p className="text-sm text-slate-600 mt-2 line-clamp-2">{sol.description}</p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {(sol.categories || []).map(cat => (
